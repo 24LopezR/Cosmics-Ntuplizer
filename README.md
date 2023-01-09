@@ -35,6 +35,20 @@ scram b -j 8
   <li> <strong>test/</strong>: which contains cfg files to run the sequences defined in the python/ folder.</li>
 </ul>
 
+### EDAnalyzer plugin
+
+(to be completed)
+
+### Configuration cfi files and parameters
+
+Parameters are values that are defined "per sequence" and serve to configure how the code should run. For example, if we want to run the same EDAnalyzer for both data and Monte Carlo we may need to know if the generation variables can be accesed or not as if we try to access them in data we may likely get an error. This could be done via parameters.
+
+Each parameter as a variable that is declared in the EDAnalyzer constructor as a private variable that can be used when the code is running. For example, to indicate if we are running on data samples we have can define a bool variable ```isData```:
+
+
+
+### Configuration cfg files
+
 ## How to run
 
 This example runs with a file of the 2023 NoBPTX dataset that may need to be accessed throught xrootd. Make sure that you have a valid proxy before running and do at least once:
@@ -53,6 +67,9 @@ cmsRun test/runNtuplizer_cfg.py
 ## Quick start: How to modify the analyzer
 
 In this section (to be completed) there are several examples of how modify the existing analyzer.
+
+### How to add a parameter
+
 
 ### How to add new variables of an existing collection
 

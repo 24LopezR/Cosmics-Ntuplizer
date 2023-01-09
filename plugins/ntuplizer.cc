@@ -70,6 +70,8 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // --- Variables
       //
 
+      bool isData = false;
+
       // Event
       Int_t event = 0;
       Int_t lumiBlock = 0;
@@ -97,6 +99,7 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t dmu_isDSA[200] = {0};
       Int_t dmu_isDGL[200] = {0};
       Int_t dmu_isDTK[200] = {0};
+      Float_t dmu_dsa_pt[200] = {0.};
 
       //
       // --- Output
@@ -117,6 +120,7 @@ ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) {
 
    counts = new TH1F("counts", "", 1, 0, 1);
 
+   isData = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
    dglToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
    dsaToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedStandAloneCollection"));
    dmuToken = consumes<edm::View<pat::Muon> >  (parameters.getParameter<edm::InputTag>("displacedMuonCollection"));
@@ -134,12 +138,15 @@ void ntuplizer::beginJob() {
 
    std::cout << "Begin Job" << std::endl;
 
+   // Init the file and the TTree
    output_filename = parameters.getParameter<std::string>("nameOfOutput");
    file_out = new TFile(output_filename.c_str(), "RECREATE");
-
    tree_out = new TTree("Events", "Events");
 
-   // Tree branches
+   // Analyzer parameters
+   isData = parameters.getParameter<bool>("isData");
+
+   // TTree branches
    tree_out->Branch("event", &event, "event/I");
    tree_out->Branch("lumiBlock", &lumiBlock, "lumiBlock/I");
    tree_out->Branch("run", &run, "run/I");
@@ -163,6 +170,7 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dmu_isDSA", dmu_isDSA, "dmu_isDSA[ndmu]/I");
    tree_out->Branch("dmu_isDGL", dmu_isDGL, "dmu_isDGL[ndmu]/I");
    tree_out->Branch("dmu_isDTK", dmu_isDTK, "dmu_isDTK[ndmu]/I");
+   tree_out->Branch("dmu_dsa_pt", dmu_dsa_pt, "dmu_dsa_pt[ndmu]/F");
 
 
 }
@@ -213,6 +221,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dgl_pt[ndgl] = dgl.pt();
      dgl_eta[ndgl] = dgl.eta();
      dgl_phi[ndgl] = dgl.phi();
+     dgl_nhits[ndgl] = dgl.hitPattern().numberOfValidHits();
      ndgl++;
    }
 
@@ -223,6 +232,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dsa_pt[ndsa] = dsa.pt();
      dsa_eta[ndsa] = dsa.eta();
      dsa_phi[ndsa] = dsa.phi();
+     dsa_nhits[ndsa] = dsa.hitPattern().numberOfValidHits();
      ndsa++;
    }
 
@@ -236,6 +246,13 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dmu_isDGL[ndmu] = dmuon.isGlobalMuon();
      dmu_isDSA[ndmu] = dmuon.isStandAloneMuon();
      dmu_isDTK[ndmu] = dmuon.isTrackerMuon();
+
+     // Access the DSA track associated to the displacedMuon
+     if ( dmuon.isStandAloneMuon() ) {
+       const reco::Track* outerTrack = (dmuon.standAloneMuon()).get();
+       dmu_dsa_pt[ndmu] = outerTrack->pt();
+     }
+
      ndmu++;
    }
 
