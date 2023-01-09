@@ -43,8 +43,25 @@ scram b -j 8
 
 Parameters are values that are defined "per sequence" and serve to configure how the code should run. For example, if we want to run the same EDAnalyzer for both data and Monte Carlo we may need to know if the generation variables can be accesed or not as if we try to access them in data we may likely get an error. This could be done via parameters.
 
-Each parameter as a variable that is declared in the EDAnalyzer constructor as a private variable that can be used when the code is running. For example, to indicate if we are running on data samples we have can define a bool variable ```isData```:
+The parameter values are defined in a cfi file, whose structure is as follows e.g. python/ntuples_cfi.py:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/ac4da89ab55d8d01a4b70a8a585680ea5a8961d7/python/ntuples_cfi.py#L1-L12
+where ```ntuples``` is the name of the sequence (instance of EDAnalyzer) and ```'ntuplizer'``` matches the name of the plugin we want to run.
 
+Each parameter as a variable that is declared in the EDAnalyzer constructor as a private variable that can be used when the code is running. For example, to indicate if we are running on data samples we have can define a bool variable ```isData```:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L73
+and we also define a ```isData``` parameter in the cfi file ntuples_cfi.py:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/ac4da89ab55d8d01a4b70a8a585680ea5a8961d7/python/ntuples_cfi.py#L5
+
+The ```isData``` variable is initiated with the value set in the cfi file. The values defined there can be accessed in the constructor with ```iConfig``` variable:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L115
+
+To access ```iConfig``` in other parts of the code is useful to define a ```edm::ParameterSet``` variable, which in our case is called ```parameters```and it is declared in the class definition as
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L49
+and initiated in the constructor as a copy of ```iConfig```:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L119
+
+Then we can assign the correct value to ```isData``` before the analyzer runs in ```beginJob()``` function like:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L147
 
 
 ### Configuration cfg files
