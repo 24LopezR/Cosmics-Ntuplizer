@@ -129,10 +129,11 @@ https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a
 
 The Token is initialized in the constructor with the label of the collection and the type with the ```consumes``` method:
 https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L126
-(in this case the name of the collection is given as a parameter in the cfi file).
+In this case the name of the collection is given as a parameter in the cfi file with the name of ```displacedMuonCollection```:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/fa2da2dc097043de56e6cc7b5aa188e41fa45e4c/python/ntuples_cfi.py#L11
 
 Then, we use the Token to load the collection (per event) in the Handler:
 https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L205
 
-And this collection can be accesses inside ```analyze()``` as an ```std::vector``` of ```pat::Muon```.
+And this collection can be accessed inside ```analyze()``` as an ```std::vector``` of ```pat::Muon```.
 
