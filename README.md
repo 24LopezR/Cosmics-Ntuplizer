@@ -68,5 +68,12 @@ So the value of this variable should be assigned before that like:
 https://github.com/CeliaFernandez/standard-Ntuplizer/blob/8656711d7fa7d640a9ec160daa955738d283720e/plugins/ntuplizer.cc#L210
 https://github.com/CeliaFernandez/standard-Ntuplizer/blob/8656711d7fa7d640a9ec160daa955738d283720e/plugins/ntuplizer.cc#L216
 
+4) It is possible to save an array of values. In this case we must define a container array with a long enough length (as it is declared when the analyzer is defined and bound to be always the same for every event). For example, for the pt of the stored displacedGlobalMuon tracks we define a default array container of 200 entries (no event has more than 200 displaced global muons):
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/df839c1226bc0d8acb6d3d5408cd9dad6daa94a6/plugins/ntuplizer.cc#L80
+And then set the array length for the branch. If the array length is dependent of the event, we can make the array branch length dependent of another TTree variable. In this case we have as much pt measurements as number of displacedGlobalMuon tracks i.e. ```ndgl```:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/df839c1226bc0d8acb6d3d5408cd9dad6daa94a6/plugins/ntuplizer.cc#L148
+Since the array is itself a contained of adresses, it is not needed to include the ```&```. The pt values are filled per displacedGlobalMuon track in a loop:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/df839c1226bc0d8acb6d3d5408cd9dad6daa94a6/plugins/ntuplizer.cc#L213
+
 ### How to read a new collection
 
