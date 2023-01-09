@@ -33,11 +33,18 @@ scram b -j 8
   <li> <strong>plugins/</strong>: which contains the plugins (EDAnalyzer's) where the analyzers are defined in .cc files. These are the main code.</li>
   <li> <strong>python/</strong>: which contains cfi files to setup the sequences that run with the plugins contained in plugins/. A sequence is an specific configuration of the parameters that run with one of the plugins defined in plugins. One single plugin may have different sequences defined in the same or multiple files.</li> 
   <li> <strong>test/</strong>: which contains cfg files to run the sequences defined in the python/ folder.</li>
+  <li> <strong>macros/</strong> (optional): which contains .py files to read the produced ntuples and create the plots if we don't have an external analyzer.</li>
 </ul>
 
 ### EDAnalyzer plugin
 
-(to be completed)
+EDAnalyzer is a class that is designed to loop over the events of one or several ROOT files. It has several actions that are executed before the event loop in the ```beginJob()``` function, actions that are executed per event in the ```analyze()``` function and actions that are executed once the loop has finished in the ```endJob()``` function.
+
+Each EDAnalyzer instance is associated with a module (don't forget to include this line):
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L265
+
+In the case of the ntuplizer we would like to initialize the output file in the ```beginJob()``` function, fill the information per event in the ```analyze()``` function and finally close and save the file in the ```analyze()``` once all the information is saved.
+
 
 ### Configuration cfi files and parameters
 
@@ -66,6 +73,8 @@ https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a
 
 ### Configuration cfg files
 
+The configurarion cfg file serves to run the plugins as described in Section "How to run".
+
 ## How to run
 
 This example runs with a file of the 2023 NoBPTX dataset that may need to be accessed throught xrootd. Make sure that you have a valid proxy before running and do at least once:
@@ -84,9 +93,6 @@ cmsRun test/runNtuplizer_cfg.py
 ## Quick start: How to modify the analyzer
 
 In this section (to be completed) there are several examples of how modify the existing analyzer.
-
-### How to add a parameter
-
 
 ### How to add new variables of an existing collection
 
@@ -110,4 +116,23 @@ Since the array is itself a contained of adresses, it is not needed to include t
 https://github.com/CeliaFernandez/standard-Ntuplizer/blob/df839c1226bc0d8acb6d3d5408cd9dad6daa94a6/plugins/ntuplizer.cc#L213
 
 ### How to read a new collection
+
+To read collections we need to know the class of the objects we want to access and the label of the collection itself. If you don't know this information this command is useful:
+```
+edmDumpEventContent sample.root > eventcontent.txt
+```
+
+For example, to access displaced muons in MiniAOD we need to know that the name of the collection is ```slimmedDisplacedMuons``` and that these are saved as ```pat::Muon``` objects.
+
+Then, we need to define a Token and a Handler in the EDAnalyzer declaration as private variables:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L66-L67
+
+The Token is initialized in the constructor with the label of the collection and the type with the ```consumes``` method:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L126
+(in this case the name of the collection is given as a parameter in the cfi file).
+
+Then, we use the Token to load the collection (per event) in the Handler:
+https://github.com/CeliaFernandez/standard-Ntuplizer/blob/5e3b77f976d88d9c812b7a5cff1a32b70b0cfe25/plugins/ntuplizer.cc#L205
+
+And this collection can be accesses inside ```analyze()``` as an ```std::vector``` of ```pat::Muon```.
 
