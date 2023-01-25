@@ -8,7 +8,9 @@ ntuples = cms.EDAnalyzer('ntuplizer',
     BeamSpot = cms.InputTag("offlineBeamSpot"),
     displacedGlobalCollection = cms.InputTag("displacedGlobalMuons"),
     displacedStandAloneCollection = cms.InputTag("displacedStandAloneMuons"),
-    displacedMuonCollection = cms.InputTag("slimmedDisplacedMuons")
+    displacedMuonCollection = cms.InputTag("slimmedDisplacedMuons"),
+
+    prescales  = cms.InputTag("patTrigger"),
+    bits       = cms.InputTag("TriggerResults","","HLT"),
+    objects    = cms.InputTag("slimmedPatTrigger")
 )
-
-

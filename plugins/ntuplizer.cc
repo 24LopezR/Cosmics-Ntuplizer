@@ -52,9 +52,15 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // --- Tokens and Handles
       //
 
+      // trigger bits
       edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
+      edm::Handle<edm::TriggerResults> triggerBits;
+      // trigger objects
       edm::EDGetTokenT<edm::View<pat::TriggerObjectStandAlone> > triggerObjects_;
+      edm::Handle<edm::View<pat::TriggerObjectStandAlone>  > triggerObjects;
+      // trigger prescales
       edm::EDGetTokenT<pat::PackedTriggerPrescales>  triggerPrescales_;
+      edm::Handle<pat::PackedTriggerPrescales> triggerPrescales;
 
       // displacedGlobalMuons (reco::Track)
       edm::EDGetTokenT<edm::View<reco::Track> > dglToken;
@@ -72,6 +78,10 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       bool isData = false;
 
+      // Trigger tags
+      std::vector<std::string> HLTPaths_;
+      bool triggerPass[200] = {false};
+
       // Event
       Int_t event = 0;
       Int_t lumiBlock = 0;
@@ -82,6 +92,11 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Float_t dgl_pt[200] = {0.};
       Float_t dgl_eta[200] = {0.};
       Float_t dgl_phi[200] = {0.};
+      Float_t dgl_ptError[200] = {0.};
+      Float_t dgl_dxy[200] = {0.};
+      Float_t dgl_dz[200] = {0.};
+      Int_t dgl_nValidMuonHits[200] = {0};
+      Int_t dgl_nValidStripHits[200] = {0};
       Int_t dgl_nhits[200] = {0};
 
       // displacedStandAloneMuons
@@ -89,7 +104,25 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Float_t dsa_pt[200] = {0.};
       Float_t dsa_eta[200] = {0.};
       Float_t dsa_phi[200] = {0.};
+      Float_t dsa_ptError[200] = {0.};
+      Float_t dsa_dxy[200] = {0.};
+      Float_t dsa_dz[200] = {0.};
+      Float_t dsa_normalizedChi2[200] = {0.};
+      Float_t dsa_charge[200] = {0.};
+
+      Int_t dsa_nMuonHits[200] = {0};
+      Int_t dsa_nValidMuonHits[200] = {0};
+      Int_t dsa_nValidMuonDTHits[200] = {0};
+      Int_t dsa_nValidMuonCSCHits[200] = {0};
+      Int_t dsa_nValidMuonRPCHits[200] = {0};
+      Int_t dsa_nValidStripHits[200] = {0};
       Int_t dsa_nhits[200] = {0};
+
+      Int_t dsa_nLostMuonHits[200] = {0};
+      Int_t dsa_nLostMuonDTHits[200] = {0};
+      Int_t dsa_nLostMuonCSCHits[200] = {0};
+      Int_t dsa_nLostMuonRPCHits[200] = {0};
+
 
       // displacedMuons
       Int_t ndmu = 0;
@@ -120,11 +153,13 @@ ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) {
 
    counts = new TH1F("counts", "", 1, 0, 1);
 
-   isData = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
    dglToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
    dsaToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedStandAloneCollection"));
    dmuToken = consumes<edm::View<pat::Muon> >  (parameters.getParameter<edm::InputTag>("displacedMuonCollection"));
 
+   triggerBits_ = consumes<edm::TriggerResults> (parameters.getParameter<edm::InputTag>("bits"));
+   triggerObjects_ = consumes<edm::View<pat::TriggerObjectStandAlone> > (parameters.getParameter<edm::InputTag>("objects"));
+   triggerPrescales_ = consumes<pat::PackedTriggerPrescales > (parameters.getParameter<edm::InputTag>("prescales"));
 }
 
 
@@ -146,22 +181,48 @@ void ntuplizer::beginJob() {
    // Analyzer parameters
    isData = parameters.getParameter<bool>("isData");
 
+   // Load HLT paths
+   HLTPaths_.push_back("HLT_L2Mu10_NoVertex_NoBPTX3BX");
+   HLTPaths_.push_back("HLT_L2Mu10_NoVertex_NoBPTX");
+
    // TTree branches
    tree_out->Branch("event", &event, "event/I");
    tree_out->Branch("lumiBlock", &lumiBlock, "lumiBlock/I");
    tree_out->Branch("run", &run, "run/I");
 
    tree_out->Branch("ndgl", &ndgl, "ndgl/I");
-   tree_out->Branch("dgl_pt", dgl_pt, "dgl_pti[ndgl]/F");
+   tree_out->Branch("dgl_pt", dgl_pt, "dgl_pt[ndgl]/F");
    tree_out->Branch("dgl_eta", dgl_eta, "dgl_eta[ndgl]/F");
    tree_out->Branch("dgl_phi", dgl_phi, "dgl_phi[ndgl]/F");
+   tree_out->Branch("dgl_ptError", dgl_ptError, "dgl_ptError[ndgl]/F");
+   tree_out->Branch("dgl_dxy", dgl_dxy, "dgl_dxy[ndgl]/F");
+   tree_out->Branch("dgl_dz", dgl_dz, "dgl_dz[ndgl]/F");
+   tree_out->Branch("dgl_nValidMuonHits", dgl_nValidMuonHits, "dgl_nValidMuonHits[ndgl]/I");
+   tree_out->Branch("dgl_nValidStripHits", dgl_nValidStripHits, "dgl_nValidStripHits[ndgl]/I");
    tree_out->Branch("dgl_nhits", dgl_nhits, "dgl_nhits[ndgl]/I");
 
    tree_out->Branch("ndsa", &ndsa, "ndsa/I");
    tree_out->Branch("dsa_pt", dsa_pt, "dsa_pt[ndsa]/F");
    tree_out->Branch("dsa_eta", dsa_eta, "dsa_eta[ndsa]/F");
    tree_out->Branch("dsa_phi", dsa_phi, "dsa_phi[ndsa]/F");
+   tree_out->Branch("dsa_ptError", dsa_ptError, "dsa_ptError[ndsa]/F");
+   tree_out->Branch("dsa_dxy", dsa_dxy, "dsa_dxy[ndsa]/F");
+   tree_out->Branch("dsa_dz", dsa_dz, "dsa_dz[ndsa]/F");
+   tree_out->Branch("dsa_normalizedChi2", dsa_normalizedChi2, "dsa_normalizedChi2[ndsa]/F");
+   tree_out->Branch("dsa_charge", dsa_charge, "dsa_charge[ndsa]/F");
+
+   tree_out->Branch("dsa_nMuonHits", dsa_nMuonHits, "dsa_nMuonHits[ndsa]/I");
+   tree_out->Branch("dsa_nValidMuonHits", dsa_nValidMuonHits, "dsa_nValidMuonHits[ndsa]/I");
+   tree_out->Branch("dsa_nValidMuonDTHits", dsa_nValidMuonDTHits, "dsa_nValidMuonDTHits[ndsa]/I");
+   tree_out->Branch("dsa_nValidMuonCSCHits", dsa_nValidMuonCSCHits, "dsa_nValidMuonCSCHits[ndsa]/I");
+   tree_out->Branch("dsa_nValidMuonRPCHits", dsa_nValidMuonRPCHits, "dsa_nValidMuonRPCHits[ndsa]/I");
+   tree_out->Branch("dsa_nValidStripHits", dsa_nValidStripHits, "dsa_nValidStripHits[ndsa]/I");
    tree_out->Branch("dsa_nhits", dsa_nhits, "dsa_nhits[ndsa]/I");
+
+   tree_out->Branch("dsa_nLostMuonHits", dsa_nLostMuonHits, "dsa_nLostMuonHits[ndsa]/I");
+   tree_out->Branch("dsa_nLostMuonDTHits", dsa_nLostMuonDTHits, "dsa_nLostMuonDTHits[ndsa]/I");
+   tree_out->Branch("dsa_nLostMuonCSCHits", dsa_nLostMuonCSCHits, "dsa_nLostMuonCSCHits[ndsa]/I");
+   tree_out->Branch("dsa_nLostMuonRPCHits", dsa_nLostMuonRPCHits, "dsa_nLostMuonRPCHits[ndsa]/I");
 
    tree_out->Branch("ndmu", &ndmu, "ndmu/I");
    tree_out->Branch("dmu_pt", dmu_pt, "dmu_pt[ndmu]/F");
@@ -172,6 +233,10 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dmu_isDTK", dmu_isDTK, "dmu_isDTK[ndmu]/I");
    tree_out->Branch("dmu_dsa_pt", dmu_dsa_pt, "dmu_dsa_pt[ndmu]/F");
 
+   // Trigger branches
+   for (unsigned int ihlt = 0; ihlt < HLTPaths_.size(); ihlt++) {
+     tree_out->Branch(TString(HLTPaths_[ihlt]), &triggerPass[ihlt]);
+   }
 
 }
 
@@ -203,6 +268,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(dglToken, dgls);
    iEvent.getByToken(dsaToken, dsas);
    iEvent.getByToken(dmuToken, dmuons);
+   iEvent.getByToken(triggerBits_, triggerBits);
+   iEvent.getByToken(triggerObjects_, triggerObjects);
 
    // Count number of events read
    counts->Fill(0);
@@ -221,6 +288,11 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dgl_pt[ndgl] = dgl.pt();
      dgl_eta[ndgl] = dgl.eta();
      dgl_phi[ndgl] = dgl.phi();
+     dgl_ptError[ndgl] = dgl.ptError();
+     dgl_dxy[ndgl] = dgl.dxy();
+     dgl_dz[ndgl] = dgl.dz();
+     dgl_nValidMuonHits[ndgl] = dgl.hitPattern().numberOfValidMuonHits();
+     dgl_nValidStripHits[ndgl] = dgl.hitPattern().numberOfValidStripHits();
      dgl_nhits[ndgl] = dgl.hitPattern().numberOfValidHits();
      ndgl++;
    }
@@ -232,7 +304,24 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dsa_pt[ndsa] = dsa.pt();
      dsa_eta[ndsa] = dsa.eta();
      dsa_phi[ndsa] = dsa.phi();
+     dsa_ptError[ndsa] = dsa.ptError();
+     dsa_dxy[ndsa] = dsa.dxy();
+     dsa_dz[ndsa] = dsa.dz();
+     dsa_normalizedChi2[ndsa] = dsa.normalizedChi2();
+     dsa_charge[ndsa] = dsa.charge();
+
+     dsa_nMuonHits[ndsa] = dsa.hitPattern().numberOfMuonHits();
+     dsa_nValidMuonHits[ndsa] = dsa.hitPattern().numberOfValidMuonHits();
+     dsa_nValidMuonDTHits[ndsa] = dsa.hitPattern().numberOfValidMuonDTHits();
+     dsa_nValidMuonCSCHits[ndsa] = dsa.hitPattern().numberOfValidMuonCSCHits();
+     dsa_nValidMuonRPCHits[ndsa] = dsa.hitPattern().numberOfValidMuonRPCHits();
+     dsa_nValidStripHits[ndsa] = dsa.hitPattern().numberOfValidStripHits();
      dsa_nhits[ndsa] = dsa.hitPattern().numberOfValidHits();
+
+     dsa_nLostMuonHits[ndsa] = dsa.hitPattern().numberOfLostMuonHits();
+     dsa_nLostMuonDTHits[ndsa] = dsa.hitPattern().numberOfLostMuonDTHits();
+     dsa_nLostMuonCSCHits[ndsa] = dsa.hitPattern().numberOfLostMuonCSCHits();
+     dsa_nLostMuonRPCHits[ndsa] = dsa.hitPattern().numberOfLostMuonRPCHits();
      ndsa++;
    }
 
@@ -256,8 +345,28 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      ndmu++;
    }
 
+   // Check if trigger fired:
+   const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
+   unsigned int ipath = 0;
+   for (auto path : HLTPaths_) {
+     std::string path_v = path + "_v";
+     // std::cout << path << "\t" << std::endl;
+     bool fired = false;
+     for (unsigned int itrg = 0; itrg < triggerBits->size(); ++itrg) {
+       TString TrigPath = names.triggerName(itrg);
+       // std::cout << TrigPath << std::endl; 
+       if (!triggerBits->accept(itrg))
+         continue;
+       if (!TrigPath.Contains(path_v)){
+         continue;
+       }
+       fired = true;
+     }
+     triggerPass[ipath] = fired;
+     ipath++;
+   } 
 
-   // -> Fill tree
+   //-> Fill tree
    tree_out->Fill();
 
 }

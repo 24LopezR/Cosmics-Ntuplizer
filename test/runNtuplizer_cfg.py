@@ -18,11 +18,10 @@ process.options = cms.untracked.PSet(
   #numberOfThreads=cms.untracked.uint32(8)
 )
 
-process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_cff')
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 # Select number of events to be processed
-nEvents = 1000
+nEvents = 200000
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
@@ -32,11 +31,11 @@ process.source = cms.Source("PoolSource",
     secondaryFileNames = cms.untracked.vstring(),
     skipEvents = cms.untracked.uint32(0)
   )
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_mcRun3_2022_realistic_v5')
+process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_PromptAnalysis_v1')
 
 ## Define the process to run 
 ## 
-process.load("Analysis.standard-Ntuplizer.ntuples_cfi")
+process.load("Analysis.first-Ntuplizer.ntuples_cfi")
 
 process.p = cms.EndPath(process.ntuples)
 
