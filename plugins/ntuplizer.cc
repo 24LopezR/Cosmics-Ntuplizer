@@ -95,9 +95,21 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Float_t dgl_ptError[200] = {0.};
       Float_t dgl_dxy[200] = {0.};
       Float_t dgl_dz[200] = {0.};
+      Float_t dgl_normalizedChi2[200] = {0.};
+      Float_t dgl_charge[200] = {0.};
+
+      Int_t dgl_nMuonHits[200] = {0};
       Int_t dgl_nValidMuonHits[200] = {0};
+      Int_t dgl_nValidMuonDTHits[200] = {0};
+      Int_t dgl_nValidMuonCSCHits[200] = {0};
+      Int_t dgl_nValidMuonRPCHits[200] = {0};
       Int_t dgl_nValidStripHits[200] = {0};
       Int_t dgl_nhits[200] = {0};
+
+      Int_t dgl_nLostMuonHits[200] = {0};
+      Int_t dgl_nLostMuonDTHits[200] = {0};
+      Int_t dgl_nLostMuonCSCHits[200] = {0};
+      Int_t dgl_nLostMuonRPCHits[200] = {0};
 
       // displacedStandAloneMuons
       Int_t ndsa = 0;
@@ -197,9 +209,21 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dgl_ptError", dgl_ptError, "dgl_ptError[ndgl]/F");
    tree_out->Branch("dgl_dxy", dgl_dxy, "dgl_dxy[ndgl]/F");
    tree_out->Branch("dgl_dz", dgl_dz, "dgl_dz[ndgl]/F");
+   tree_out->Branch("dgl_normalizedChi2", dgl_normalizedChi2, "dgl_normalizedChi2[ndgl]/F");
+   tree_out->Branch("dgl_charge", dgl_charge, "dgl_charge[ndgl]/F");
+
+   tree_out->Branch("dgl_nMuonHits", dgl_nMuonHits, "dgl_nMuonHits[ndgl]/I");
    tree_out->Branch("dgl_nValidMuonHits", dgl_nValidMuonHits, "dgl_nValidMuonHits[ndgl]/I");
+   tree_out->Branch("dgl_nValidMuonDTHits", dgl_nValidMuonDTHits, "dgl_nValidMuonDTHits[ndgl]/I");
+   tree_out->Branch("dgl_nValidMuonCSCHits", dgl_nValidMuonCSCHits, "dgl_nValidMuonCSCHits[ndgl]/I");
+   tree_out->Branch("dgl_nValidMuonRPCHits", dgl_nValidMuonRPCHits, "dgl_nValidMuonRPCHits[ndgl]/I");
    tree_out->Branch("dgl_nValidStripHits", dgl_nValidStripHits, "dgl_nValidStripHits[ndgl]/I");
    tree_out->Branch("dgl_nhits", dgl_nhits, "dgl_nhits[ndgl]/I");
+
+   tree_out->Branch("dgl_nLostMuonHits", dgl_nLostMuonHits, "dgl_nLostMuonHits[ndgl]/I");
+   tree_out->Branch("dgl_nLostMuonDTHits", dgl_nLostMuonDTHits, "dgl_nLostMuonDTHits[ndgl]/I");
+   tree_out->Branch("dgl_nLostMuonCSCHits", dgl_nLostMuonCSCHits, "dgl_nLostMuonCSCHits[ndgl]/I");
+   tree_out->Branch("dgl_nLostMuonRPCHits", dgl_nLostMuonRPCHits, "dgl_nLostMuonRPCHits[ndgl]/I");
 
    tree_out->Branch("ndsa", &ndsa, "ndsa/I");
    tree_out->Branch("dsa_pt", dsa_pt, "dsa_pt[ndsa]/F");
@@ -291,9 +315,21 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dgl_ptError[ndgl] = dgl.ptError();
      dgl_dxy[ndgl] = dgl.dxy();
      dgl_dz[ndgl] = dgl.dz();
+     dgl_normalizedChi2[ndgl] = dgl.normalizedChi2();
+     dgl_charge[ndgl] = dgl.charge();
+
+     dgl_nMuonHits[ndgl] = dgl.hitPattern().numberOfMuonHits();
+     dgl_nValidMuonDTHits[ndgl] = dgl.hitPattern().numberOfValidMuonDTHits();
+     dgl_nValidMuonCSCHits[ndgl] = dgl.hitPattern().numberOfValidMuonCSCHits();
+     dgl_nValidMuonRPCHits[ndgl] = dgl.hitPattern().numberOfValidMuonRPCHits();
      dgl_nValidMuonHits[ndgl] = dgl.hitPattern().numberOfValidMuonHits();
      dgl_nValidStripHits[ndgl] = dgl.hitPattern().numberOfValidStripHits();
      dgl_nhits[ndgl] = dgl.hitPattern().numberOfValidHits();
+
+     dgl_nLostMuonHits[ndgl] = dgl.hitPattern().numberOfLostMuonHits();
+     dgl_nLostMuonDTHits[ndgl] = dgl.hitPattern().numberOfLostMuonDTHits();
+     dgl_nLostMuonCSCHits[ndgl] = dgl.hitPattern().numberOfLostMuonCSCHits();
+     dgl_nLostMuonRPCHits[ndgl] = dgl.hitPattern().numberOfLostMuonRPCHits();
      ndgl++;
    }
 

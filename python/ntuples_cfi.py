@@ -1,7 +1,7 @@
 import FWCore.ParameterSet.Config as cms
 
 ntuples = cms.EDAnalyzer('ntuplizer',
-    nameOfOutput = cms.string('output.root'),
+    nameOfOutput = cms.string('Cosmics_Run2022C.root'),
     isData = cms.bool(True),
     EventInfo = cms.InputTag("generator"),
     RunInfo = cms.InputTag("generator"),
