@@ -21,7 +21,7 @@ process.options = cms.untracked.PSet(
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 # Select number of events to be processed
-nEvents = 200000
+nEvents = 10
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
@@ -35,7 +35,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_PromptAnalysis_v
 
 ## Define the process to run 
 ## 
-process.load("Analysis.first-Ntuplizer.ntuples_cfi")
+process.load("Analysis.Cosmics-Ntuplizer.ntuples_cfi")
 
 process.p = cms.EndPath(process.ntuples)
 
