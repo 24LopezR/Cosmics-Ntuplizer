@@ -21,11 +21,11 @@ process.options = cms.untracked.PSet(
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 # Select number of events to be processed
-nEvents = 10
+nEvents = 1000
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
-listOfFiles = ['/store/data/Run2022D/NoBPTX/MINIAOD/PromptReco-v1/000/357/503/00000/ef047f11-b46d-4ae6-88c5-3f5ca19591be.root']
+listOfFiles = ['file:/eos/user/r/rlopezru/FixDisplaced/CMSSW_12_4_0/src/step0.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),

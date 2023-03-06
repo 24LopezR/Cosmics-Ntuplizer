@@ -6,7 +6,7 @@ from FWCore.PythonUtilities.LumiList import LumiList
 config = config()
 
 # General
-config.General.workArea = '/eos/user/r/rlopezru/Run2022C-PromptReco-v1/MINIAOD/crab_projects'
+config.General.workArea = '/eos/user/r/rlopezru/Run2022C-PromptReco-v1/AOD/crab_projects'
 config.General.requestName = 'CosmicsAnalysis_Run2022C'
 config.General.transferOutputs = True
 config.General.transferLogs = True
@@ -20,7 +20,7 @@ config.JobType.allowUndistributedCMSSW = True
 config.JobType.outputFiles = ['Cosmics_Run2022C.root']
 
 # Data
-config.Data.inputDataset = '/NoBPTX/Run2022C-PromptReco-v1/MINIAOD'
+config.Data.inputDataset = '/NoBPTX/Run2022C-PromptReco-v1/AOD'
 config.Data.inputDBS = 'global'
 config.Data.splitting = 'FileBased'
 config.Data.unitsPerJob = 100 # splitting to get ~500 output files
