@@ -1,7 +1,7 @@
 #include <memory>
 #include "FWCore/Framework/interface/Frameworkfwd.h"
 #include "FWCore/Framework/interface/one/EDAnalyzer.h"
-#include "FWCore/Framework/interface/EDProducer.h"
+//#include "FWCore/Framework/interface/EDProducer.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Framework/interface/Event.h"
 #include "FWCore/Framework/interface/MakerMacros.h"
@@ -124,6 +124,8 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t dsa_nLostMuonDTHits[200] = {0};
       Int_t dsa_nLostMuonCSCHits[200] = {0};
       Int_t dsa_nLostMuonRPCHits[200] = {0};
+      Int_t dsa_dtStationsWithValidHits[200] = {0};
+      Int_t dsa_cscStationsWithValidHits[200] = {0};
 
 
       // displacedMuons
@@ -157,6 +159,8 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t dmu_dsa_nValidMuonRPCHits[200] = {0};
       Int_t dmu_dsa_nValidStripHits[200] = {0};
       Int_t dmu_dsa_nhits[200] = {0};
+      Int_t dmu_dsa_dtStationsWithValidHits[200] = {0};
+      Int_t dmu_dsa_cscStationsWithValidHits[200] = {0};
       Int_t dmu_dsa_nsegments[200] = {0};
       Float_t dmu_dgl_pt[200] = {0.};
       Float_t dmu_dgl_eta[200] = {0.};
@@ -284,6 +288,8 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dsa_nLostMuonDTHits", dsa_nLostMuonDTHits, "dsa_nLostMuonDTHits[ndsa]/I");
    tree_out->Branch("dsa_nLostMuonCSCHits", dsa_nLostMuonCSCHits, "dsa_nLostMuonCSCHits[ndsa]/I");
    tree_out->Branch("dsa_nLostMuonRPCHits", dsa_nLostMuonRPCHits, "dsa_nLostMuonRPCHits[ndsa]/I");
+   tree_out->Branch("dsa_dtStationsWithValidHits", dsa_dtStationsWithValidHits, "dsa_dtStationsWithValidHits[ndsa]/I");
+   tree_out->Branch("dsa_cscStationsWithValidHits", dsa_cscStationsWithValidHits, "dsa_cscStationsWithValidHits[ndsa]/I");
 
    tree_out->Branch("ndmu", &ndmu, "ndmu/I");
    /*tree_out->Branch("dmu_pt", dmu_pt, "dmu_pt[ndmu]/F");
@@ -323,6 +329,8 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dmu_dsa_nValidMuonRPCHits", dmu_dsa_nValidMuonRPCHits, "dmu_dsa_nValidMuonRPCHits[ndmu]/I");
    tree_out->Branch("dmu_dsa_nValidStripHits", dmu_dsa_nValidStripHits, "dmu_dsa_nValidStripHits[ndmu]/I");
    tree_out->Branch("dmu_dsa_nhits", dmu_dsa_nhits, "dmu_dsa_nhits[ndmu]/I");
+   tree_out->Branch("dmu_dsa_dtStationsWithValidHits", dmu_dsa_dtStationsWithValidHits, "dmu_dsa_dtStationsWithValidHits[ndmu]/I");
+   tree_out->Branch("dmu_dsa_cscStationsWithValidHits", dmu_dsa_cscStationsWithValidHits, "dmu_dsa_cscStationsWithValidHits[ndmu]/I");
    tree_out->Branch("dmu_dsa_nsegments", dmu_dsa_nsegments, "dmu_dsa_nsegments[ndmu]/I");
    // dmu_dgl
    tree_out->Branch("dmu_dgl_pt", dmu_dgl_pt, "dmu_dgl_pt[ndmu]/F");
@@ -457,6 +465,10 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dsa_nLostMuonDTHits[ndsa] = dsa.hitPattern().numberOfLostMuonDTHits();
      dsa_nLostMuonCSCHits[ndsa] = dsa.hitPattern().numberOfLostMuonCSCHits();
      dsa_nLostMuonRPCHits[ndsa] = dsa.hitPattern().numberOfLostMuonRPCHits();
+
+     dsa_dtStationsWithValidHits[ndsa] = dsa.hitPattern().dtStationsWithValidHits();
+     dsa_cscStationsWithValidHits[ndsa] = dsa.hitPattern().cscStationsWithValidHits();
+
      ndsa++;
    }
 
@@ -490,8 +502,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      */
 
      // Access the DGL track associated to the displacedMuon
+     std::cout << "isGlobalMuon: " << dmuon.isGlobalMuon() << std::endl;
      if ( dmuon.isGlobalMuon() ) {
-       std::cout << "isGlobalMuon: " << dmuon.isGlobalMuon() << std::endl;
        const reco::Track* globalTrack = (dmuon.combinedMuon()).get();
        dmu_dgl_pt[ndmu] = globalTrack->pt();
        dmu_dgl_eta[ndmu] = globalTrack->eta();
@@ -527,8 +539,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      }     
 
      // Access the DSA track associated to the displacedMuon
+     std::cout << "isStandAloneMuon: " << dmuon.isStandAloneMuon() << std::endl;
      if ( dmuon.isStandAloneMuon() ) {
-       std::cout << "isStandAloneMuon: " << dmuon.isStandAloneMuon() << std::endl;
        const reco::Track* outerTrack = (dmuon.standAloneMuon()).get();
        dmu_dsa_pt[ndmu] = outerTrack->pt();
        dmu_dsa_eta[ndmu] = outerTrack->eta();
@@ -545,6 +557,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        dmu_dsa_nValidMuonRPCHits[ndmu] = outerTrack->hitPattern().numberOfValidMuonRPCHits();
        dmu_dsa_nValidStripHits[ndmu] = outerTrack->hitPattern().numberOfValidStripHits();
        dmu_dsa_nhits[ndmu] = outerTrack->hitPattern().numberOfValidHits();
+       dmu_dsa_dtStationsWithValidHits[ndmu] = outerTrack->hitPattern().dtStationsWithValidHits();
+       dmu_dsa_cscStationsWithValidHits[ndmu] = outerTrack->hitPattern().cscStationsWithValidHits();
        // Number of DT+CSC segments
        unsigned int nsegments = 0;
        for (trackingRecHit_iterator hit = outerTrack->recHitsBegin(); hit != outerTrack->recHitsEnd(); ++hit) {
@@ -556,6 +570,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          }
        }
        dmu_dsa_nsegments[ndmu] = nsegments;
+       
      } else {
        dmu_dsa_pt[ndmu] = 0;
        dmu_dsa_eta[ndmu] = 0;
@@ -572,12 +587,14 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        dmu_dsa_nValidMuonRPCHits[ndmu] = 0;
        dmu_dsa_nValidStripHits[ndmu] = 0;
        dmu_dsa_nhits[ndmu] = 0;
+       dmu_dsa_dtStationsWithValidHits[ndsa] = 0;
+       dmu_dsa_cscStationsWithValidHits[ndsa] = 0;
        dmu_dsa_nsegments[ndmu] = 0;
      }
 
      // Access the DTK track associated to the displacedMuon
+     std::cout << "isTrackerMuon: " << dmuon.isTrackerMuon() << std::endl;
      if ( dmuon.isTrackerMuon() ) {
-       std::cout << "isTrackerMuon: " << dmuon.isTrackerMuon() << std::endl;
        const reco::Track* innerTrack = (dmuon.track()).get();
        dmu_dtk_pt[ndmu] = innerTrack->pt();
        dmu_dtk_eta[ndmu] = innerTrack->eta();
