@@ -25,8 +25,8 @@ nEvents = -1
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
-inputdir = '/eos/user/r/rlopezru/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_displacedFilter/Samples/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_TuneCP5_13p6TeV_pythia8/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_displacedFilter/230307_082209/0000/'
-listOfFiles = ['file:'+inputdir+'HTo2LongLivedTo2mu2jets_MiniAOD_displacedFilter_'+str(i+1)+'.root' for i in range(8)]
+inputdir = '/eos/user/r/rlopezru/Samples/HTo2LongLivedTo2mu2jets_MiniAOD/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_TuneCP5_13p6TeV_pythia8/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_MiniAOD_CMSSW_12_4_11_patch3_nsegments2/230314_084718/0000/'
+listOfFiles = ['file:'+inputdir+'HTo2LongLivedTo2mu2jets_MiniAOD_CMSSW_12_4_11_patch3_nsegments2_'+str(i+1)+'.root' for i in range(8)]
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),
@@ -36,6 +36,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '124X_mcRun3_2022_realistic_v12
 
 ## Define the process to run 
 ## 
-process.load("Analysis.Cosmics-Ntuplizer.HTo2LL_ntuples_cfi")
+process.load("Analysis.DisplacedMuons-Ntuplizer.HTo2LL_ntuples_cfi")
 
 process.p = cms.EndPath(process.ntuples)

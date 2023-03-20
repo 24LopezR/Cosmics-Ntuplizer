@@ -20,6 +20,7 @@
 #include "DataFormats/PatCandidates/interface/PackedTriggerPrescales.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/TrackReco/interface/TrackFwd.h"
+#include "DataFormats/VertexReco/interface/Vertex.h"
 
 #include <string>
 #include <iostream>
@@ -31,6 +32,16 @@
 #include "TH1F.h"
 #include "TFile.h"
 
+float dxy_value(const reco::GenParticle &p, const reco::Vertex &pv){
+    float vx = p.vx();
+    float vy = p.vy();
+    float phi = p.phi();
+    float pv_x = pv.x();
+    float pv_y = pv.y();
+  
+    float dxy = -(vx-pv_x)*sin(phi) + (vy-pv_y)*cos(phi);
+    return dxy;
+}
 
 
 class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
@@ -65,6 +76,12 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // displacedMuons (reco::Muon // pat::Muon)
       edm::EDGetTokenT<edm::View<reco::Muon> > dmuToken;
       edm::Handle<edm::View<reco::Muon> > dmuons;
+      // PrimaryVertices
+      edm::EDGetTokenT<edm::View<reco::Vertex> > thePrimaryVertexCollection;
+      edm::Handle<edm::View<reco::Vertex> > primaryvertices;
+      // GenParticles
+      edm::EDGetTokenT<edm::View<reco::GenParticle> >  theGenParticleCollection;
+      edm::Handle<edm::View<reco::GenParticle> > genParticles;
 
       //
       // --- Variables
@@ -81,7 +98,9 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t lumiBlock = 0;
       Int_t run = 0;
 
+      // ----------------------------------
       // displacedGlobalMuons
+      // ----------------------------------
       Int_t ndgl = 0;
       Float_t dgl_pt[200] = {0.};
       Float_t dgl_eta[200] = {0.};
@@ -103,7 +122,9 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t dgl_nLostMuonCSCHits[200] = {0};
       Int_t dgl_nLostMuonRPCHits[200] = {0};
 
+      // ----------------------------------
       // displacedStandAloneMuons
+      // ----------------------------------
       Int_t ndsa = 0;
       Float_t dsa_pt[200] = {0.};
       Float_t dsa_eta[200] = {0.};
@@ -127,14 +148,10 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t dsa_dtStationsWithValidHits[200] = {0};
       Int_t dsa_cscStationsWithValidHits[200] = {0};
 
-
+      // ----------------------------------
       // displacedMuons
+      // ----------------------------------
       Int_t ndmu = 0;
-      /*Float_t dmu_pt[200] = {0.};
-      Float_t dmu_eta[200] = {0.};
-      Float_t dmu_phi[200] = {0.};
-      Float_t dmu_normChi2[200] = {0.};
-      Float_t dmu_charge[200] = {0.};*/
       Int_t dmu_isDSA[200] = {0};
       Int_t dmu_isDGL[200] = {0};
       Int_t dmu_isDTK[200] = {0};
@@ -193,6 +210,50 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t dmu_dtk_nValidStripHits[200] = {0};
       Int_t dmu_dtk_nhits[200] = {0};
 
+      // ----------------------------------
+      // PrimaryVertices
+      // ----------------------------------
+      Int_t nPV;
+      Int_t nTruePV;
+      Int_t PV_passAcceptance;
+      Float_t PV_vx;
+      Float_t PV_vy;
+      Float_t PV_vz;
+
+      // ----------------------------------
+      // GenParticles
+      // ----------------------------------
+      Int_t nGenMuon;
+      Int_t nGenMuon_PFS;
+      Int_t nGenMuon_HPFS;
+      Int_t nGenMuon_PTDP;
+      Int_t nGenMuon_HDP;
+      Float_t GenLeptonSel_pt[30];
+      Float_t GenLeptonSel_E[30];
+      Float_t GenLeptonSel_et[30];
+      Float_t GenLeptonSel_eta[30];
+      Float_t GenLeptonSel_phi[30];
+      Int_t GenLeptonSel_pdgId[30];
+      Float_t GenLeptonSel_dxy[30];
+      Float_t GenLeptonSel_vx[30];
+      Float_t GenLeptonSel_vy[30];
+      Float_t GenLeptonSel_vz[30];
+      Int_t GenLeptonSel_motherPdgId[30];
+      Int_t GenLeptonSel_fromHardProcessFinalState[30];
+      Int_t GenLeptonSel_isPromptFinalState[30];
+      Int_t GenLeptonSel_isDirectPromptTauDecayProductFinalState[30];
+      Int_t GenLeptonSel_isDirectHadronDecayProduct[30];
+      
+      Int_t nHardProcessParticle;
+      Float_t HardProcessParticle_pt[30];
+      Float_t HardProcessParticle_E[30];
+      Float_t HardProcessParticle_eta[30];
+      Float_t HardProcessParticle_phi[30];
+      Float_t HardProcessParticle_vx[30];
+      Float_t HardProcessParticle_vy[30];
+      Float_t HardProcessParticle_vz[30];
+      Int_t HardProcessParticle_pdgId[30];
+
       //
       // --- Output
       //
@@ -215,6 +276,8 @@ ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) {
    dglToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
    dsaToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedStandAloneCollection"));
    dmuToken = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("displacedMuonCollection"));
+   theGenParticleCollection = consumes<edm::View<reco::GenParticle> >  (parameters.getParameter<edm::InputTag>("genParticleCollection"));
+   thePrimaryVertexCollection = consumes<edm::View<reco::Vertex> >  (parameters.getParameter<edm::InputTag>("PrimaryVertexCollection"));
 
    triggerBits_ = consumes<edm::TriggerResults> (parameters.getParameter<edm::InputTag>("bits"));
 }
@@ -247,6 +310,9 @@ void ntuplizer::beginJob() {
    tree_out->Branch("lumiBlock", &lumiBlock, "lumiBlock/I");
    tree_out->Branch("run", &run, "run/I");
 
+   // ----------------------------------
+   // displacedGlobalMuons
+   // ----------------------------------
    tree_out->Branch("ndgl", &ndgl, "ndgl/I");
    tree_out->Branch("dgl_pt", dgl_pt, "dgl_pt[ndgl]/F");
    tree_out->Branch("dgl_eta", dgl_eta, "dgl_eta[ndgl]/F");
@@ -268,6 +334,9 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dgl_nLostMuonCSCHits", dgl_nLostMuonCSCHits, "dgl_nLostMuonCSCHits[ndgl]/I");
    tree_out->Branch("dgl_nLostMuonRPCHits", dgl_nLostMuonRPCHits, "dgl_nLostMuonRPCHits[ndgl]/I");
 
+   // ----------------------------------
+   // displacedStandAloneMuons
+   // ----------------------------------
    tree_out->Branch("ndsa", &ndsa, "ndsa/I");
    tree_out->Branch("dsa_pt", dsa_pt, "dsa_pt[ndsa]/F");
    tree_out->Branch("dsa_eta", dsa_eta, "dsa_eta[ndsa]/F");
@@ -291,19 +360,10 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dsa_dtStationsWithValidHits", dsa_dtStationsWithValidHits, "dsa_dtStationsWithValidHits[ndsa]/I");
    tree_out->Branch("dsa_cscStationsWithValidHits", dsa_cscStationsWithValidHits, "dsa_cscStationsWithValidHits[ndsa]/I");
 
+   // ----------------------------------
+   // displacedMuons
+   // ----------------------------------
    tree_out->Branch("ndmu", &ndmu, "ndmu/I");
-   /*tree_out->Branch("dmu_pt", dmu_pt, "dmu_pt[ndmu]/F");
-   tree_out->Branch("dmu_eta", dmu_eta, "dmu_eta[ndmu]/F");
-   tree_out->Branch("dmu_phi", dmu_phi, "dmu_phi[ndmu]/F");
-   tree_out->Branch("dmu_normChi2", dmu_normChi2, "dmu_normChi2[ndmu]/F");
-   tree_out->Branch("dmu_charge", dmu_charge, "dmu_charge[ndmu]/F");
-   tree_out->Branch("dmu_nMuonHits", dmu_nMuonHits, "dmu_nMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_nValidMuonHits", dmu_nValidMuonHits, "dmu_nValidMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_nValidMuonDTHits", dmu_nValidMuonDTHits, "dmu_nValidMuonDTHits[ndmu]/I");
-   tree_out->Branch("dmu_nValidMuonCSCHits", dmu_nValidMuonCSCHits, "dmu_nValidMuonCSCHits[ndmu]/I");
-   tree_out->Branch("dmu_nValidMuonRPCHits", dmu_nValidMuonRPCHits, "dmu_nValidMuonRPCHits[ndmu]/I");
-   tree_out->Branch("dmu_nValidStripHits", dmu_nValidStripHits, "dmu_nValidStripHits[ndmu]/I");
-   tree_out->Branch("dmu_nhits", dmu_nhits, "dmu_nhits[ndmu]/I");*/
    tree_out->Branch("dmu_isDSA", dmu_isDSA, "dmu_isDSA[ndmu]/I");
    tree_out->Branch("dmu_isDGL", dmu_isDGL, "dmu_isDGL[ndmu]/I");
    tree_out->Branch("dmu_isDTK", dmu_isDTK, "dmu_isDTK[ndmu]/I");
@@ -365,6 +425,46 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dmu_dtk_nValidStripHits", dmu_dtk_nValidStripHits, "dmu_dtk_nValidStripHits[ndmu]/I");
    tree_out->Branch("dmu_dtk_nhits", dmu_dtk_nhits, "dmu_dtk_nhits[ndmu]/I");
 
+   // ----------------------------------
+   // PrimaryVertices
+   // ----------------------------------
+   tree_out->Branch("nPV", &nPV, "nPV/I");
+   tree_out->Branch("nTruePV", &nTruePV, "nTruePV/I");
+   tree_out->Branch("PV_passAcceptance", &PV_passAcceptance, "PV_passAcceptance/I");
+   tree_out->Branch("PV_vx", &PV_vx, "PV_vx/F");
+   tree_out->Branch("PV_vy", &PV_vy, "PV_vy/F");
+   tree_out->Branch("PV_vz", &PV_vz, "PV_vz/F");   
+
+   // ----------------------------------
+   // GenParticles
+   // ----------------------------------
+   tree_out->Branch("nGenMuon", &nGenMuon, "nGenMuon/I");
+   tree_out->Branch("GenLeptonSel_pt", GenLeptonSel_pt, "GenLeptonSel_pt[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_E", GenLeptonSel_E, "GenLeptonSel_E[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_et", GenLeptonSel_et, "GenLeptonSel_et[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_eta", GenLeptonSel_eta, "GenLeptonSel_eta[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_phi", GenLeptonSel_phi, "GenLeptonSel_phi[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_dxy", GenLeptonSel_dxy, "GenLeptonSel_dxy[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_vx", GenLeptonSel_vx, "GenLeptonSel_vx[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_vy", GenLeptonSel_vy, "GenLeptonSel_vy[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_vz", GenLeptonSel_vz, "GenLeptonSel_vz[nGenMuon]/F");
+   tree_out->Branch("GenLeptonSel_pdgId", GenLeptonSel_pdgId, "GenLeptonSel_pdgId[nGenMuon]/I");
+   tree_out->Branch("GenLeptonSel_motherPdgId", GenLeptonSel_motherPdgId, "GenLeptonSel_motherPdgId[nGenMuon]/I");
+   tree_out->Branch("GenLeptonSel_isPromptFinalState", GenLeptonSel_isPromptFinalState, "GenLeptonSel_isPromptFinalState[nGenMuon]/I");
+   tree_out->Branch("GenLeptonSel_fromHardProcessFinalState", GenLeptonSel_fromHardProcessFinalState, "GenLeptonSel_fromHardProcessFinalState[nGenMuon]/I");
+   tree_out->Branch("GenLeptonSel_isDirectPromptTauDecayProductFinalState", GenLeptonSel_isDirectPromptTauDecayProductFinalState, "GenLeptonSel_isDirectPromptTauDecayProductFinalState[nGenMuon]/I");
+   tree_out->Branch("GenLeptonSel_isDirectHadronDecayProduct", GenLeptonSel_isDirectHadronDecayProduct, "GenLeptonSel_isDirectHadronDecayProduct[nGenMuon]/I");
+ 
+   tree_out->Branch("nHardProcessParticle", &nHardProcessParticle, "nHardProcessParticle/I");
+   tree_out->Branch("HardProcessParticle_E", HardProcessParticle_E, "HardProcessParticle_E[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_pt", HardProcessParticle_pt, "HardProcessParticle_pt[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_eta", HardProcessParticle_eta, "HardProcessParticle_eta[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_phi", HardProcessParticle_phi, "HardProcessParticle_phi[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_vx", HardProcessParticle_vx, "HardProcessParticle_vx[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_vy", HardProcessParticle_vy, "HardProcessParticle_vy[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_vz", HardProcessParticle_vz, "HardProcessParticle_vz[nHardProcessParticle]/F");
+   tree_out->Branch("HardProcessParticle_pdgId", HardProcessParticle_pdgId, "HardProcessParticle_pdgId[nHardProcessParticle]/I");
+
    // Trigger branches
    for (unsigned int ihlt = 0; ihlt < HLTPaths_.size(); ihlt++) {
      tree_out->Branch(TString(HLTPaths_[ihlt]), &triggerPass[ihlt]);
@@ -401,6 +501,10 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(dsaToken, dsas);
    iEvent.getByToken(dmuToken, dmuons);
    iEvent.getByToken(triggerBits_, triggerBits);
+   iEvent.getByToken(thePrimaryVertexCollection, primaryvertices);
+   if (!isData){
+      iEvent.getByToken(theGenParticleCollection, genParticles);
+   }
 
    // Count number of events read
    counts->Fill(0);
@@ -411,8 +515,9 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    lumiBlock = iEvent.id().luminosityBlock();
    run = iEvent.id().run();
 
-
-   // displacedGlobalMuons
+   // ----------------------------------
+   // displacedGlobalMuons Collection
+   // ----------------------------------
    ndgl = 0;
    for (unsigned int i = 0; i < dgls->size(); i++) {
      const reco::Track& dgl(dgls->at(i));
@@ -440,7 +545,9 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      ndgl++;
    }
 
-   // displacedStandAloneMuons
+   // ----------------------------------
+   // displacedStandAloneMuons Collection
+   // ----------------------------------
    ndsa = 0;
    for (unsigned int i = 0; i < dsas->size(); i++) {
      const reco::Track& dsa(dsas->at(i));
@@ -472,16 +579,13 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      ndsa++;
    }
 
-   // displacedMuons
+   // ----------------------------------
+   // displacedMuons Collection
+   // ----------------------------------
    ndmu = 0;;
    for (unsigned int i = 0; i < dmuons->size(); i++) {
      std::cout << " - - ndmu: " << ndmu << std::endl;
      const reco::Muon& dmuon(dmuons->at(i));
-     //dmu_pt[ndmu] = dmuon.pt();
-     //dmu_eta[ndmu] = dmuon.eta();
-     //dmu_phi[ndmu] = dmuon.phi();
-     //dmu_normChi2[ndmu] = dmuon.normChi2();
-     //dmu_charge[ndmu] = dmuon.charge();
      dmu_isDGL[ndmu] = dmuon.isGlobalMuon();
      dmu_isDSA[ndmu] = dmuon.isStandAloneMuon();
      dmu_isDTK[ndmu] = dmuon.isTrackerMuon();
@@ -491,15 +595,6 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      dmu_numberOfChambersCSCorDT[ndmu] = dmuon.numberOfChambersCSCorDT();
      dmu_numberOfMatchedStations[ndmu] = dmuon.numberOfMatchedStations();
      dmu_numberOfMatchedRPCLayers[ndmu] = dmuon.numberOfMatchedRPCLayers();
-     /*
-     dmu_nMuonHits[ndmu] = dmuon.hitPattern().numberOfMuonHits();
-     dmu_nValidMuonHits[ndmu] = dmuon.hitPattern().numberOfValidMuonHits();
-     dmu_nValidMuonDTHits[ndmu] = dmuon.hitPattern().numberOfValidMuonDTHits();
-     dmu_nValidMuonCSCHits[ndmu] = dmuon.hitPattern().numberOfValidMuonCSCHits();
-     dmu_nValidMuonRPCHits[ndmu] = dmuon.hitPattern().numberOfValidMuonRPCHits();
-     dmu_nValidStripHits[ndmu] = dmuon.hitPattern().numberOfValidStripHits();
-     dmu_nhits[ndmu] = dmuon.hitPattern().numberOfValidHits();
-     */
 
      // Access the DGL track associated to the displacedMuon
      std::cout << "isGlobalMuon: " << dmuon.isGlobalMuon() << std::endl;
@@ -560,7 +655,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        dmu_dsa_dtStationsWithValidHits[ndmu] = outerTrack->hitPattern().dtStationsWithValidHits();
        dmu_dsa_cscStationsWithValidHits[ndmu] = outerTrack->hitPattern().cscStationsWithValidHits();
        // Number of DT+CSC segments
-       unsigned int nsegments = 0;
+       /**unsigned int nsegments = 0;
        for (trackingRecHit_iterator hit = outerTrack->recHitsBegin(); hit != outerTrack->recHitsEnd(); ++hit) {
          if (!(*hit)->isValid()) continue;
          DetId id = (*hit)->geographicalId();
@@ -569,7 +664,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            nsegments++;
          }
        }
-       dmu_dsa_nsegments[ndmu] = nsegments;
+       dmu_dsa_nsegments[ndmu] = nsegments;**/
        
      } else {
        dmu_dsa_pt[ndmu] = 0;
@@ -633,6 +728,125 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      std::cout << "End muon" << std::endl;
    }
 
+   // ----------------------------------
+   // PrimaryVertices collection
+   // ----------------------------------
+   nTruePV = 0;
+   nPV = primaryvertices->size();
+
+   for (size_t i = 0; i < primaryvertices->size(); i ++){
+       const reco::Vertex &current_vertex = (*primaryvertices)[i];
+       if(current_vertex.isValid()){ nTruePV++; }
+   }
+
+   // The PV information:
+   const reco::Vertex &thePrimaryVertex = (*primaryvertices)[0];
+   
+   PV_vx = thePrimaryVertex.x();
+   PV_vy = thePrimaryVertex.y();
+   PV_vz = thePrimaryVertex.z();
+   PV_passAcceptance = false;
+   
+   if (!thePrimaryVertex.isFake() && thePrimaryVertex.ndof() > 4 && fabs(thePrimaryVertex.z()) < 25 && thePrimaryVertex.position().rho() <= 2) {
+      PV_passAcceptance = true;
+   }   
+   GlobalPoint _PVpoint(thePrimaryVertex.x(), thePrimaryVertex.y(), thePrimaryVertex.z());
+
+   // ----------------------------------
+   // GenParticle collection
+   // ----------------------------------
+   std::vector<int> iGM; // gen muons count
+
+   reco::GenParticleRef mref;
+   reco::GenParticle m;
+   if (!isData) {
+      // Get the muons that can be reconstructed
+      for (size_t i = 0; i < genParticles->size(); i++) {
+         const reco::GenParticle &genparticle = (*genParticles)[i];
+           if ( abs(genparticle.pdgId()) == 13 && genparticle.status() == 1) {
+               iGM.push_back(i);
+           }
+       }
+       nGenMuon = iGM.size();
+       std::cout << "Number of gen muons = " << nGenMuon << std::endl;
+
+       for (size_t i = 0; i < iGM.size(); i++) {
+          const reco::GenParticle &genparticle = (*genParticles)[iGM.at(i)];
+          
+          GenLeptonSel_pt[i] = genparticle.pt();
+          GenLeptonSel_E[i] = genparticle.energy();
+          GenLeptonSel_et[i] = genparticle.et();
+          GenLeptonSel_eta[i] = genparticle.eta();
+          GenLeptonSel_phi[i] = genparticle.phi();
+          GenLeptonSel_pdgId[i] = genparticle.pdgId();
+
+          // Bottom-up to get the real decaying particle:
+          if (genparticle.mother()->pdgId() == genparticle.pdgId()) {
+
+              mref = genparticle.motherRef();
+              m = *mref;
+              while (m.pdgId() == m.mother()->pdgId()) {
+                  mref = m.motherRef();
+                  m = *mref;
+              }
+
+              GenLeptonSel_vx[i] = m.vx();
+              GenLeptonSel_vy[i] = m.vy();
+              GenLeptonSel_vz[i] = m.vz();
+	      GenLeptonSel_dxy[i] = dxy_value(m, thePrimaryVertex); // should be computed here or before?
+
+              if(m.numberOfMothers() != 0){
+                  GenLeptonSel_motherPdgId[i] = m.motherRef()->pdgId();
+              } else {
+                  GenLeptonSel_motherPdgId[i] = 0; 
+              }
+          } else {
+
+              GenLeptonSel_vx[i] = genparticle.vx();
+              GenLeptonSel_vy[i] = genparticle.vy();
+              GenLeptonSel_vz[i] = genparticle.vz();
+	      GenLeptonSel_dxy[i] = dxy_value(genparticle, thePrimaryVertex); // should be computed here or before?
+
+              GenLeptonSel_motherPdgId[i] = genparticle.motherRef()->pdgId();
+          }
+          
+          // Flags
+          GenLeptonSel_isPromptFinalState[i] = genparticle.isPromptFinalState();
+          GenLeptonSel_fromHardProcessFinalState[i] = genparticle.fromHardProcessFinalState(); // has to be done with the last one
+          GenLeptonSel_isDirectPromptTauDecayProductFinalState[i] = genparticle.isDirectPromptTauDecayProductFinalState(); 
+          GenLeptonSel_isDirectHadronDecayProduct[i] = genparticle.statusFlags().isDirectHadronDecayProduct(); 
+       }
+       
+       // Counters initialization
+       nGenMuon_PFS = 0; 
+       nGenMuon_HPFS = 0; 
+       nGenMuon_PTDP = 0; 
+       nGenMuon_HDP = 0; 
+       for (size_t i = 0; i < iGM.size(); i++) {
+          if (GenLeptonSel_isPromptFinalState[i]) { nGenMuon_PFS++; }
+          if (GenLeptonSel_fromHardProcessFinalState[i]) { nGenMuon_HPFS++; }
+          if (GenLeptonSel_isDirectPromptTauDecayProductFinalState[i]) { nGenMuon_PTDP++; }
+          if (GenLeptonSel_isDirectHadronDecayProduct[i]) { nGenMuon_HDP++; }
+       }
+
+       // Hard Process Collection
+       nHardProcessParticle = 0;
+       for (size_t i = 0; i < genParticles->size(); i++) {
+          const reco::GenParticle &genparticle = (*genParticles)[i];
+          if (genparticle.isHardProcess()){
+              HardProcessParticle_pt[nHardProcessParticle] = genparticle.pt();
+              HardProcessParticle_E[nHardProcessParticle] = genparticle.energy();
+              HardProcessParticle_eta[nHardProcessParticle] = genparticle.eta();
+              HardProcessParticle_phi[nHardProcessParticle] = genparticle.phi();
+              HardProcessParticle_vx[nHardProcessParticle] = genparticle.vx();
+              HardProcessParticle_vy[nHardProcessParticle] = genparticle.vy();
+              HardProcessParticle_vz[nHardProcessParticle] = genparticle.vz();
+              HardProcessParticle_pdgId[nHardProcessParticle] = genparticle.pdgId();
+              nHardProcessParticle++;
+           }       
+       }
+   }
+
    // Check if trigger fired:
    const edm::TriggerNames &names = iEvent.triggerNames(*triggerBits);
    unsigned int ipath = 0;
@@ -642,7 +856,6 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      bool fired = false;
      for (unsigned int itrg = 0; itrg < triggerBits->size(); ++itrg) {
        TString TrigPath = names.triggerName(itrg);
-       // std::cout << TrigPath << std::endl; 
        if (!triggerBits->accept(itrg))
          continue;
        if (!TrigPath.Contains(path_v)){
