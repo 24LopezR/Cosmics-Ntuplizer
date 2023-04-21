@@ -59,6 +59,7 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 
       edm::ParameterSet parameters;
 
+      bool isData = true;
       //
       // --- Tokens and Handles
       //
@@ -76,6 +77,7 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // displacedMuons (reco::Muon // pat::Muon)
       edm::EDGetTokenT<edm::View<reco::Muon> > dmuToken;
       edm::Handle<edm::View<reco::Muon> > dmuons;
+    
       // PrimaryVertices
       edm::EDGetTokenT<edm::View<reco::Vertex> > thePrimaryVertexCollection;
       edm::Handle<edm::View<reco::Vertex> > primaryvertices;
@@ -87,7 +89,6 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       // --- Variables
       //
 
-      bool isData = false;
 
       // Trigger tags
       std::vector<std::string> HLTPaths_;
@@ -276,8 +277,10 @@ ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) {
    dglToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
    dsaToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedStandAloneCollection"));
    dmuToken = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("displacedMuonCollection"));
-   theGenParticleCollection = consumes<edm::View<reco::GenParticle> >  (parameters.getParameter<edm::InputTag>("genParticleCollection"));
-   thePrimaryVertexCollection = consumes<edm::View<reco::Vertex> >  (parameters.getParameter<edm::InputTag>("PrimaryVertexCollection"));
+   if (!isData) {
+     theGenParticleCollection = consumes<edm::View<reco::GenParticle> >  (parameters.getParameter<edm::InputTag>("genParticleCollection"));
+     thePrimaryVertexCollection = consumes<edm::View<reco::Vertex> >  (parameters.getParameter<edm::InputTag>("PrimaryVertexCollection"));
+   }
 
    triggerBits_ = consumes<edm::TriggerResults> (parameters.getParameter<edm::InputTag>("bits"));
 }
@@ -425,45 +428,47 @@ void ntuplizer::beginJob() {
    tree_out->Branch("dmu_dtk_nValidStripHits", dmu_dtk_nValidStripHits, "dmu_dtk_nValidStripHits[ndmu]/I");
    tree_out->Branch("dmu_dtk_nhits", dmu_dtk_nhits, "dmu_dtk_nhits[ndmu]/I");
 
-   // ----------------------------------
-   // PrimaryVertices
-   // ----------------------------------
-   tree_out->Branch("nPV", &nPV, "nPV/I");
-   tree_out->Branch("nTruePV", &nTruePV, "nTruePV/I");
-   tree_out->Branch("PV_passAcceptance", &PV_passAcceptance, "PV_passAcceptance/I");
-   tree_out->Branch("PV_vx", &PV_vx, "PV_vx/F");
-   tree_out->Branch("PV_vy", &PV_vy, "PV_vy/F");
-   tree_out->Branch("PV_vz", &PV_vz, "PV_vz/F");   
+   if (!isData) {
+     // ----------------------------------
+     // PrimaryVertices
+     // ----------------------------------
+     tree_out->Branch("nPV", &nPV, "nPV/I");
+     tree_out->Branch("nTruePV", &nTruePV, "nTruePV/I");
+     tree_out->Branch("PV_passAcceptance", &PV_passAcceptance, "PV_passAcceptance/I");
+     tree_out->Branch("PV_vx", &PV_vx, "PV_vx/F");
+     tree_out->Branch("PV_vy", &PV_vy, "PV_vy/F");
+     tree_out->Branch("PV_vz", &PV_vz, "PV_vz/F");   
 
-   // ----------------------------------
-   // GenParticles
-   // ----------------------------------
-   tree_out->Branch("nGenMuon", &nGenMuon, "nGenMuon/I");
-   tree_out->Branch("GenLeptonSel_pt", GenLeptonSel_pt, "GenLeptonSel_pt[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_E", GenLeptonSel_E, "GenLeptonSel_E[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_et", GenLeptonSel_et, "GenLeptonSel_et[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_eta", GenLeptonSel_eta, "GenLeptonSel_eta[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_phi", GenLeptonSel_phi, "GenLeptonSel_phi[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_dxy", GenLeptonSel_dxy, "GenLeptonSel_dxy[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_vx", GenLeptonSel_vx, "GenLeptonSel_vx[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_vy", GenLeptonSel_vy, "GenLeptonSel_vy[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_vz", GenLeptonSel_vz, "GenLeptonSel_vz[nGenMuon]/F");
-   tree_out->Branch("GenLeptonSel_pdgId", GenLeptonSel_pdgId, "GenLeptonSel_pdgId[nGenMuon]/I");
-   tree_out->Branch("GenLeptonSel_motherPdgId", GenLeptonSel_motherPdgId, "GenLeptonSel_motherPdgId[nGenMuon]/I");
-   tree_out->Branch("GenLeptonSel_isPromptFinalState", GenLeptonSel_isPromptFinalState, "GenLeptonSel_isPromptFinalState[nGenMuon]/I");
-   tree_out->Branch("GenLeptonSel_fromHardProcessFinalState", GenLeptonSel_fromHardProcessFinalState, "GenLeptonSel_fromHardProcessFinalState[nGenMuon]/I");
-   tree_out->Branch("GenLeptonSel_isDirectPromptTauDecayProductFinalState", GenLeptonSel_isDirectPromptTauDecayProductFinalState, "GenLeptonSel_isDirectPromptTauDecayProductFinalState[nGenMuon]/I");
-   tree_out->Branch("GenLeptonSel_isDirectHadronDecayProduct", GenLeptonSel_isDirectHadronDecayProduct, "GenLeptonSel_isDirectHadronDecayProduct[nGenMuon]/I");
+     // ----------------------------------
+     // GenParticles
+     // ----------------------------------
+     tree_out->Branch("nGenMuon", &nGenMuon, "nGenMuon/I");
+     tree_out->Branch("GenLeptonSel_pt", GenLeptonSel_pt, "GenLeptonSel_pt[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_E", GenLeptonSel_E, "GenLeptonSel_E[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_et", GenLeptonSel_et, "GenLeptonSel_et[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_eta", GenLeptonSel_eta, "GenLeptonSel_eta[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_phi", GenLeptonSel_phi, "GenLeptonSel_phi[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_dxy", GenLeptonSel_dxy, "GenLeptonSel_dxy[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_vx", GenLeptonSel_vx, "GenLeptonSel_vx[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_vy", GenLeptonSel_vy, "GenLeptonSel_vy[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_vz", GenLeptonSel_vz, "GenLeptonSel_vz[nGenMuon]/F");
+     tree_out->Branch("GenLeptonSel_pdgId", GenLeptonSel_pdgId, "GenLeptonSel_pdgId[nGenMuon]/I");
+     tree_out->Branch("GenLeptonSel_motherPdgId", GenLeptonSel_motherPdgId, "GenLeptonSel_motherPdgId[nGenMuon]/I");
+     tree_out->Branch("GenLeptonSel_isPromptFinalState", GenLeptonSel_isPromptFinalState, "GenLeptonSel_isPromptFinalState[nGenMuon]/I");
+     tree_out->Branch("GenLeptonSel_fromHardProcessFinalState", GenLeptonSel_fromHardProcessFinalState, "GenLeptonSel_fromHardProcessFinalState[nGenMuon]/I");
+     tree_out->Branch("GenLeptonSel_isDirectPromptTauDecayProductFinalState", GenLeptonSel_isDirectPromptTauDecayProductFinalState, "GenLeptonSel_isDirectPromptTauDecayProductFinalState[nGenMuon]/I");
+     tree_out->Branch("GenLeptonSel_isDirectHadronDecayProduct", GenLeptonSel_isDirectHadronDecayProduct, "GenLeptonSel_isDirectHadronDecayProduct[nGenMuon]/I");
  
-   tree_out->Branch("nHardProcessParticle", &nHardProcessParticle, "nHardProcessParticle/I");
-   tree_out->Branch("HardProcessParticle_E", HardProcessParticle_E, "HardProcessParticle_E[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_pt", HardProcessParticle_pt, "HardProcessParticle_pt[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_eta", HardProcessParticle_eta, "HardProcessParticle_eta[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_phi", HardProcessParticle_phi, "HardProcessParticle_phi[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_vx", HardProcessParticle_vx, "HardProcessParticle_vx[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_vy", HardProcessParticle_vy, "HardProcessParticle_vy[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_vz", HardProcessParticle_vz, "HardProcessParticle_vz[nHardProcessParticle]/F");
-   tree_out->Branch("HardProcessParticle_pdgId", HardProcessParticle_pdgId, "HardProcessParticle_pdgId[nHardProcessParticle]/I");
+     tree_out->Branch("nHardProcessParticle", &nHardProcessParticle, "nHardProcessParticle/I");
+     tree_out->Branch("HardProcessParticle_E", HardProcessParticle_E, "HardProcessParticle_E[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_pt", HardProcessParticle_pt, "HardProcessParticle_pt[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_eta", HardProcessParticle_eta, "HardProcessParticle_eta[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_phi", HardProcessParticle_phi, "HardProcessParticle_phi[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_vx", HardProcessParticle_vx, "HardProcessParticle_vx[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_vy", HardProcessParticle_vy, "HardProcessParticle_vy[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_vz", HardProcessParticle_vz, "HardProcessParticle_vz[nHardProcessParticle]/F");
+     tree_out->Branch("HardProcessParticle_pdgId", HardProcessParticle_pdgId, "HardProcessParticle_pdgId[nHardProcessParticle]/I");
+   }
 
    // Trigger branches
    for (unsigned int ihlt = 0; ihlt < HLTPaths_.size(); ihlt++) {
@@ -501,8 +506,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(dsaToken, dsas);
    iEvent.getByToken(dmuToken, dmuons);
    iEvent.getByToken(triggerBits_, triggerBits);
-   iEvent.getByToken(thePrimaryVertexCollection, primaryvertices);
    if (!isData){
+      iEvent.getByToken(thePrimaryVertexCollection, primaryvertices);
       iEvent.getByToken(theGenParticleCollection, genParticles);
    }
 
@@ -655,7 +660,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        dmu_dsa_dtStationsWithValidHits[ndmu] = outerTrack->hitPattern().dtStationsWithValidHits();
        dmu_dsa_cscStationsWithValidHits[ndmu] = outerTrack->hitPattern().cscStationsWithValidHits();
        // Number of DT+CSC segments
-       /**unsigned int nsegments = 0;
+       /*unsigned int nsegments = 0;
        for (trackingRecHit_iterator hit = outerTrack->recHitsBegin(); hit != outerTrack->recHitsEnd(); ++hit) {
          if (!(*hit)->isValid()) continue;
          DetId id = (*hit)->geographicalId();
@@ -664,7 +669,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            nsegments++;
          }
        }
-       dmu_dsa_nsegments[ndmu] = nsegments;**/
+       dmu_dsa_nsegments[ndmu] = nsegments;*/
        
      } else {
        dmu_dsa_pt[ndmu] = 0;
@@ -728,123 +733,125 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      std::cout << "End muon" << std::endl;
    }
 
-   // ----------------------------------
-   // PrimaryVertices collection
-   // ----------------------------------
-   nTruePV = 0;
-   nPV = primaryvertices->size();
-
-   for (size_t i = 0; i < primaryvertices->size(); i ++){
-       const reco::Vertex &current_vertex = (*primaryvertices)[i];
-       if(current_vertex.isValid()){ nTruePV++; }
-   }
-
-   // The PV information:
-   const reco::Vertex &thePrimaryVertex = (*primaryvertices)[0];
-   
-   PV_vx = thePrimaryVertex.x();
-   PV_vy = thePrimaryVertex.y();
-   PV_vz = thePrimaryVertex.z();
-   PV_passAcceptance = false;
-   
-   if (!thePrimaryVertex.isFake() && thePrimaryVertex.ndof() > 4 && fabs(thePrimaryVertex.z()) < 25 && thePrimaryVertex.position().rho() <= 2) {
-      PV_passAcceptance = true;
-   }   
-   GlobalPoint _PVpoint(thePrimaryVertex.x(), thePrimaryVertex.y(), thePrimaryVertex.z());
-
-   // ----------------------------------
-   // GenParticle collection
-   // ----------------------------------
-   std::vector<int> iGM; // gen muons count
-
-   reco::GenParticleRef mref;
-   reco::GenParticle m;
    if (!isData) {
-      // Get the muons that can be reconstructed
-      for (size_t i = 0; i < genParticles->size(); i++) {
-         const reco::GenParticle &genparticle = (*genParticles)[i];
-           if ( abs(genparticle.pdgId()) == 13 && genparticle.status() == 1) {
-               iGM.push_back(i);
-           }
-       }
-       nGenMuon = iGM.size();
-       std::cout << "Number of gen muons = " << nGenMuon << std::endl;
+     // ----------------------------------
+     // PrimaryVertices collection
+     // ----------------------------------
+     nTruePV = 0;
+     nPV = primaryvertices->size();
 
-       for (size_t i = 0; i < iGM.size(); i++) {
-          const reco::GenParticle &genparticle = (*genParticles)[iGM.at(i)];
-          
-          GenLeptonSel_pt[i] = genparticle.pt();
-          GenLeptonSel_E[i] = genparticle.energy();
-          GenLeptonSel_et[i] = genparticle.et();
-          GenLeptonSel_eta[i] = genparticle.eta();
-          GenLeptonSel_phi[i] = genparticle.phi();
-          GenLeptonSel_pdgId[i] = genparticle.pdgId();
+     for (size_t i = 0; i < primaryvertices->size(); i ++){
+         const reco::Vertex &current_vertex = (*primaryvertices)[i];
+         if(current_vertex.isValid()){ nTruePV++; }
+     }
 
-          // Bottom-up to get the real decaying particle:
-          if (genparticle.mother()->pdgId() == genparticle.pdgId()) {
+     // The PV information:
+     const reco::Vertex &thePrimaryVertex = (*primaryvertices)[0];
+     
+     PV_vx = thePrimaryVertex.x();
+     PV_vy = thePrimaryVertex.y();
+     PV_vz = thePrimaryVertex.z();
+     PV_passAcceptance = false;
+     
+     if (!thePrimaryVertex.isFake() && thePrimaryVertex.ndof() > 4 && fabs(thePrimaryVertex.z()) < 25 && thePrimaryVertex.position().rho() <= 2) {
+        PV_passAcceptance = true;
+     }   
+     GlobalPoint _PVpoint(thePrimaryVertex.x(), thePrimaryVertex.y(), thePrimaryVertex.z());
 
-              mref = genparticle.motherRef();
-              m = *mref;
-              while (m.pdgId() == m.mother()->pdgId()) {
-                  mref = m.motherRef();
-                  m = *mref;
-              }
+     // ----------------------------------
+     // GenParticle collection
+     // ----------------------------------
+     std::vector<int> iGM; // gen muons count
 
-              GenLeptonSel_vx[i] = m.vx();
-              GenLeptonSel_vy[i] = m.vy();
-              GenLeptonSel_vz[i] = m.vz();
-	      GenLeptonSel_dxy[i] = dxy_value(m, thePrimaryVertex); // should be computed here or before?
+     reco::GenParticleRef mref;
+     reco::GenParticle m;
+     if (!isData) {
+        // Get the muons that can be reconstructed
+        for (size_t i = 0; i < genParticles->size(); i++) {
+           const reco::GenParticle &genparticle = (*genParticles)[i];
+             if ( abs(genparticle.pdgId()) == 13 && genparticle.status() == 1) {
+                 iGM.push_back(i);
+             }
+         }
+         nGenMuon = iGM.size();
+         std::cout << "Number of gen muons = " << nGenMuon << std::endl;
 
-              if(m.numberOfMothers() != 0){
-                  GenLeptonSel_motherPdgId[i] = m.motherRef()->pdgId();
-              } else {
-                  GenLeptonSel_motherPdgId[i] = 0; 
-              }
-          } else {
+         for (size_t i = 0; i < iGM.size(); i++) {
+            const reco::GenParticle &genparticle = (*genParticles)[iGM.at(i)];
+            
+            GenLeptonSel_pt[i] = genparticle.pt();
+            GenLeptonSel_E[i] = genparticle.energy();
+            GenLeptonSel_et[i] = genparticle.et();
+            GenLeptonSel_eta[i] = genparticle.eta();
+            GenLeptonSel_phi[i] = genparticle.phi();
+            GenLeptonSel_pdgId[i] = genparticle.pdgId();
 
-              GenLeptonSel_vx[i] = genparticle.vx();
-              GenLeptonSel_vy[i] = genparticle.vy();
-              GenLeptonSel_vz[i] = genparticle.vz();
-	      GenLeptonSel_dxy[i] = dxy_value(genparticle, thePrimaryVertex); // should be computed here or before?
+            // Bottom-up to get the real decaying particle:
+            if (genparticle.mother()->pdgId() == genparticle.pdgId()) {
 
-              GenLeptonSel_motherPdgId[i] = genparticle.motherRef()->pdgId();
-          }
-          
-          // Flags
-          GenLeptonSel_isPromptFinalState[i] = genparticle.isPromptFinalState();
-          GenLeptonSel_fromHardProcessFinalState[i] = genparticle.fromHardProcessFinalState(); // has to be done with the last one
-          GenLeptonSel_isDirectPromptTauDecayProductFinalState[i] = genparticle.isDirectPromptTauDecayProductFinalState(); 
-          GenLeptonSel_isDirectHadronDecayProduct[i] = genparticle.statusFlags().isDirectHadronDecayProduct(); 
-       }
-       
-       // Counters initialization
-       nGenMuon_PFS = 0; 
-       nGenMuon_HPFS = 0; 
-       nGenMuon_PTDP = 0; 
-       nGenMuon_HDP = 0; 
-       for (size_t i = 0; i < iGM.size(); i++) {
-          if (GenLeptonSel_isPromptFinalState[i]) { nGenMuon_PFS++; }
-          if (GenLeptonSel_fromHardProcessFinalState[i]) { nGenMuon_HPFS++; }
-          if (GenLeptonSel_isDirectPromptTauDecayProductFinalState[i]) { nGenMuon_PTDP++; }
-          if (GenLeptonSel_isDirectHadronDecayProduct[i]) { nGenMuon_HDP++; }
-       }
+                mref = genparticle.motherRef();
+                m = *mref;
+                while (m.pdgId() == m.mother()->pdgId()) {
+                    mref = m.motherRef();
+                    m = *mref;
+                }
 
-       // Hard Process Collection
-       nHardProcessParticle = 0;
-       for (size_t i = 0; i < genParticles->size(); i++) {
-          const reco::GenParticle &genparticle = (*genParticles)[i];
-          if (genparticle.isHardProcess()){
-              HardProcessParticle_pt[nHardProcessParticle] = genparticle.pt();
-              HardProcessParticle_E[nHardProcessParticle] = genparticle.energy();
-              HardProcessParticle_eta[nHardProcessParticle] = genparticle.eta();
-              HardProcessParticle_phi[nHardProcessParticle] = genparticle.phi();
-              HardProcessParticle_vx[nHardProcessParticle] = genparticle.vx();
-              HardProcessParticle_vy[nHardProcessParticle] = genparticle.vy();
-              HardProcessParticle_vz[nHardProcessParticle] = genparticle.vz();
-              HardProcessParticle_pdgId[nHardProcessParticle] = genparticle.pdgId();
-              nHardProcessParticle++;
-           }       
-       }
+                GenLeptonSel_vx[i] = m.vx();
+                GenLeptonSel_vy[i] = m.vy();
+                GenLeptonSel_vz[i] = m.vz();
+                GenLeptonSel_dxy[i] = dxy_value(m, thePrimaryVertex); // should be computed here or before?
+
+                if(m.numberOfMothers() != 0){
+                    GenLeptonSel_motherPdgId[i] = m.motherRef()->pdgId();
+                } else {
+                    GenLeptonSel_motherPdgId[i] = 0; 
+                }
+            } else {
+
+                GenLeptonSel_vx[i] = genparticle.vx();
+                GenLeptonSel_vy[i] = genparticle.vy();
+                GenLeptonSel_vz[i] = genparticle.vz();
+                GenLeptonSel_dxy[i] = dxy_value(genparticle, thePrimaryVertex); // should be computed here or before?
+
+                GenLeptonSel_motherPdgId[i] = genparticle.motherRef()->pdgId();
+            }
+            
+            // Flags
+            GenLeptonSel_isPromptFinalState[i] = genparticle.isPromptFinalState();
+            GenLeptonSel_fromHardProcessFinalState[i] = genparticle.fromHardProcessFinalState(); // has to be done with the last one
+            GenLeptonSel_isDirectPromptTauDecayProductFinalState[i] = genparticle.isDirectPromptTauDecayProductFinalState(); 
+            GenLeptonSel_isDirectHadronDecayProduct[i] = genparticle.statusFlags().isDirectHadronDecayProduct(); 
+         }
+         
+         // Counters initialization
+         nGenMuon_PFS = 0; 
+         nGenMuon_HPFS = 0; 
+         nGenMuon_PTDP = 0; 
+         nGenMuon_HDP = 0; 
+         for (size_t i = 0; i < iGM.size(); i++) {
+            if (GenLeptonSel_isPromptFinalState[i]) { nGenMuon_PFS++; }
+            if (GenLeptonSel_fromHardProcessFinalState[i]) { nGenMuon_HPFS++; }
+            if (GenLeptonSel_isDirectPromptTauDecayProductFinalState[i]) { nGenMuon_PTDP++; }
+            if (GenLeptonSel_isDirectHadronDecayProduct[i]) { nGenMuon_HDP++; }
+         }
+
+         // Hard Process Collection
+         nHardProcessParticle = 0;
+         for (size_t i = 0; i < genParticles->size(); i++) {
+            const reco::GenParticle &genparticle = (*genParticles)[i];
+            if (genparticle.isHardProcess()){
+                HardProcessParticle_pt[nHardProcessParticle] = genparticle.pt();
+                HardProcessParticle_E[nHardProcessParticle] = genparticle.energy();
+                HardProcessParticle_eta[nHardProcessParticle] = genparticle.eta();
+                HardProcessParticle_phi[nHardProcessParticle] = genparticle.phi();
+                HardProcessParticle_vx[nHardProcessParticle] = genparticle.vx();
+                HardProcessParticle_vy[nHardProcessParticle] = genparticle.vy();
+                HardProcessParticle_vz[nHardProcessParticle] = genparticle.vz();
+                HardProcessParticle_pdgId[nHardProcessParticle] = genparticle.pdgId();
+                nHardProcessParticle++;
+             }       
+         }
+     }
    }
 
    // Check if trigger fired:
