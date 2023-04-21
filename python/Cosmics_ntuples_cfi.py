@@ -1,14 +1,14 @@
 import FWCore.ParameterSet.Config as cms
 
 ntuples = cms.EDAnalyzer('ntuplizer',
-    nameOfOutput = cms.string('Cosmics_Run2022C_AOD-Ntuples.root'),
+    nameOfOutput = cms.string('Cosmics_Run2022C.root'),
     isData = cms.bool(True),
     EventInfo = cms.InputTag("generator"),
     RunInfo = cms.InputTag("generator"),
     BeamSpot = cms.InputTag("offlineBeamSpot"),
     displacedGlobalCollection = cms.InputTag("displacedGlobalMuons"),
     displacedStandAloneCollection = cms.InputTag("displacedStandAloneMuons"),
-    displacedMuonCollection = cms.InputTag("displacedMuons"),
+    displacedMuonCollection = cms.InputTag("slimmedDisplacedMuons"),
 
     #prescales  = cms.InputTag("patTrigger"),
     bits       = cms.InputTag("TriggerResults","","HLT"),

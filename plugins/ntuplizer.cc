@@ -560,7 +560,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        dmu_dsa_dtStationsWithValidHits[ndmu] = outerTrack->hitPattern().dtStationsWithValidHits();
        dmu_dsa_cscStationsWithValidHits[ndmu] = outerTrack->hitPattern().cscStationsWithValidHits();
        // Number of DT+CSC segments
-       unsigned int nsegments = 0;
+       /*unsigned int nsegments = 0;
        for (trackingRecHit_iterator hit = outerTrack->recHitsBegin(); hit != outerTrack->recHitsEnd(); ++hit) {
          if (!(*hit)->isValid()) continue;
          DetId id = (*hit)->geographicalId();
@@ -570,7 +570,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
          }
        }
        dmu_dsa_nsegments[ndmu] = nsegments;
-       
+       */
      } else {
        dmu_dsa_pt[ndmu] = 0;
        dmu_dsa_eta[ndmu] = 0;
