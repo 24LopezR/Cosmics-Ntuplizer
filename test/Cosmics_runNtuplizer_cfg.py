@@ -36,6 +36,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '124X_dataRun3_PromptAnalysis_v
 
 ## Define the process to run 
 ## 
-process.load("Analysis.Cosmics-Ntuplizer.Cosmics_ntuples_cfi")
+process.load("Analysis.DisplacedMuons-Ntuplizer.Cosmics_ntuples_cfi")
 
 process.p = cms.EndPath(process.ntuples)
