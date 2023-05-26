@@ -1,6 +1,9 @@
 import FWCore.ParameterSet.Config as cms
 import os
 
+#################################  CONSTANTS  #################################################
+ERA = 'F'
+###############################################################################################
 
 process = cms.Process("demo")
 process.load('Configuration.StandardSequences.GeometryDB_cff')
@@ -25,17 +28,18 @@ nEvents = -1
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
-#inputdir = '/eos/user/r/rlopezru/Samples/HTo2LongLivedTo2mu2jets_MiniAOD/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_TuneCP5_13p6TeV_pythia8/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_TuneCP5_13p6TeV_pythia8/HTo2LongLivedTo2mu2jets_MH-400_MFF-150_CTau-4000mm_MiniAOD_CMSSW_13_1_0_pre2_nsegments2_review/230508_074147/0000/'
-#listOfFiles = ['file:'+inputdir+'HTo2LongLivedTo2mu2jets_MiniAOD_CMSSW_12_4_11_patch3_nsegments2_'+str(i+1)+'.root' for i in range(8)]
+listOfFiles = ['']
 process.source = cms.Source("PoolSource",
-    fileNames = cms.untracked.vstring( 'file:HTo2LongLivedTo2mu2jets_MiniAOD_CMSSW_12_4_11_patch3_nsegments2_5.root' ),
+    fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),
     skipEvents = cms.untracked.uint32(0)
   )
-process.GlobalTag = GlobalTag(process.GlobalTag, '124X_mcRun3_2022_realistic_v12')
+if ERA in 'ABCD': gTag = '124X_dataRun3_PromptAnalysis_v1'
+if ERA in 'EFG':  gTag = '124X_dataRun3_Prompt_v10'
+process.GlobalTag = GlobalTag(process.GlobalTag, gTag)
 
 ## Define the process to run 
 ## 
-process.load("Analysis.DisplacedMuons-Ntuplizer.HTo2LL_ntuples_cfi")
+process.load("Analysis.DisplacedMuons-Ntuplizer.Cosmics_AOD_Ntuples_cfi")
 
 process.p = cms.EndPath(process.ntuples)
