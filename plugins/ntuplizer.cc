@@ -68,19 +68,14 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::EDGetTokenT<edm::TriggerResults> triggerBits_;
       edm::Handle<edm::TriggerResults> triggerBits;
 
-      // displacedGlobalMuons (reco::Track)
-      edm::EDGetTokenT<edm::View<reco::Track> > dglToken;
-      edm::Handle<edm::View<reco::Track> > dgls;
-      // displacedStandAloneMuons (reco::Track)
-      edm::EDGetTokenT<edm::View<reco::Track> > dsaToken;
-      edm::Handle<edm::View<reco::Track> > dsas;
-      // displacedMuons (reco::Muon // pat::Muon)
-      edm::EDGetTokenT<edm::View<reco::Muon> > dmuToken;
-      edm::Handle<edm::View<reco::Muon> > dmuons;
+      // muons (reco::Muon)
+      edm::EDGetTokenT<edm::View<reco::Muon> > muToken;
+      edm::Handle<edm::View<reco::Muon> > muons;
     
       // PrimaryVertices
       edm::EDGetTokenT<edm::View<reco::Vertex> > thePrimaryVertexCollection;
       edm::Handle<edm::View<reco::Vertex> > primaryvertices;
+      
       // GenParticles
       edm::EDGetTokenT<edm::View<reco::GenParticle> >  theGenParticleCollection;
       edm::Handle<edm::View<reco::GenParticle> > genParticles;
@@ -100,116 +95,48 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       Int_t run = 0;
 
       // ----------------------------------
-      // displacedGlobalMuons
+      // muon variables
       // ----------------------------------
-      Int_t ndgl = 0;
-      Float_t dgl_pt[200] = {0.};
-      Float_t dgl_eta[200] = {0.};
-      Float_t dgl_phi[200] = {0.};
-      Float_t dgl_ptError[200] = {0.};
-      Float_t dgl_dxy[200] = {0.};
-      Float_t dgl_dz[200] = {0.};
-      Float_t dgl_normalizedChi2[200] = {0.};
-      Float_t dgl_charge[200] = {0.};
-      Int_t dgl_nMuonHits[200] = {0};
-      Int_t dgl_nValidMuonHits[200] = {0};
-      Int_t dgl_nValidMuonDTHits[200] = {0};
-      Int_t dgl_nValidMuonCSCHits[200] = {0};
-      Int_t dgl_nValidMuonRPCHits[200] = {0};
-      Int_t dgl_nValidStripHits[200] = {0};
-      Int_t dgl_nhits[200] = {0};
-      Int_t dgl_nLostMuonHits[200] = {0};
-      Int_t dgl_nLostMuonDTHits[200] = {0};
-      Int_t dgl_nLostMuonCSCHits[200] = {0};
-      Int_t dgl_nLostMuonRPCHits[200] = {0};
+      Int_t nmu = 0;
+      Int_t mu_isSTA[200] = {0};
+      Int_t mu_isGLB[200] = {0};
+      Int_t mu_isTRK[200] = {0};
+      Int_t mu_isMatchesValid[200] = {0};
+      Int_t mu_numberOfMatches[200] = {0};
+      Int_t mu_numberOfChambers[200] = {0};
+      Int_t mu_numberOfChambersCSCorDT[200] = {0};
+      Int_t mu_numberOfMatchedStations[200] = {0};
+      Int_t mu_numberOfMatchedRPCLayers[200] = {0};
+      Float_t mu_pt[200] = {0.};
+      Float_t mu_eta[200] = {0.};
+      Float_t mu_phi[200] = {0.};
+      Float_t mu_ptError[200] = {0.};
+      Float_t mu_dxy[200] = {0.};
+      Float_t mu_dz[200] = {0.};
+      Float_t mu_normalizedChi2[200] = {0.};
+      Float_t mu_charge[200] = {0.};
+      Int_t mu_nMuonHits[200] = {0};
+      Int_t mu_nValidMuonHits[200] = {0};
+      Int_t mu_nValidMuonDTHits[200] = {0};
+      Int_t mu_nValidMuonCSCHits[200] = {0};
+      Int_t mu_nValidMuonRPCHits[200] = {0};
+      Int_t mu_nValidStripHits[200] = {0};
+      Int_t mu_nhits[200] = {0};
+      Int_t mu_dtStationsWithValidHits[200] = {0};
+      Int_t mu_cscStationsWithValidHits[200] = {0};
+      Int_t mu_nsegments[200] = {0};
 
-      // ----------------------------------
-      // displacedStandAloneMuons
-      // ----------------------------------
-      Int_t ndsa = 0;
-      Float_t dsa_pt[200] = {0.};
-      Float_t dsa_eta[200] = {0.};
-      Float_t dsa_phi[200] = {0.};
-      Float_t dsa_ptError[200] = {0.};
-      Float_t dsa_dxy[200] = {0.};
-      Float_t dsa_dz[200] = {0.};
-      Float_t dsa_normalizedChi2[200] = {0.};
-      Float_t dsa_charge[200] = {0.};
-      Int_t dsa_nMuonHits[200] = {0};
-      Int_t dsa_nValidMuonHits[200] = {0};
-      Int_t dsa_nValidMuonDTHits[200] = {0};
-      Int_t dsa_nValidMuonCSCHits[200] = {0};
-      Int_t dsa_nValidMuonRPCHits[200] = {0};
-      Int_t dsa_nValidStripHits[200] = {0};
-      Int_t dsa_nhits[200] = {0};
-      Int_t dsa_nLostMuonHits[200] = {0};
-      Int_t dsa_nLostMuonDTHits[200] = {0};
-      Int_t dsa_nLostMuonCSCHits[200] = {0};
-      Int_t dsa_nLostMuonRPCHits[200] = {0};
-      Int_t dsa_dtStationsWithValidHits[200] = {0};
-      Int_t dsa_cscStationsWithValidHits[200] = {0};
-
-      // ----------------------------------
-      // displacedMuons
-      // ----------------------------------
-      Int_t ndmu = 0;
-      Int_t dmu_isDSA[200] = {0};
-      Int_t dmu_isDGL[200] = {0};
-      Int_t dmu_isDTK[200] = {0};
-      Int_t dmu_isMatchesValid[200] = {0};
-      Int_t dmu_numberOfMatches[200] = {0};
-      Int_t dmu_numberOfChambers[200] = {0};
-      Int_t dmu_numberOfChambersCSCorDT[200] = {0};
-      Int_t dmu_numberOfMatchedStations[200] = {0};
-      Int_t dmu_numberOfMatchedRPCLayers[200] = {0};
-      Float_t dmu_dsa_pt[200] = {0.};
-      Float_t dmu_dsa_eta[200] = {0.};
-      Float_t dmu_dsa_phi[200] = {0.};
-      Float_t dmu_dsa_ptError[200] = {0.};
-      Float_t dmu_dsa_dxy[200] = {0.};
-      Float_t dmu_dsa_dz[200] = {0.};
-      Float_t dmu_dsa_normalizedChi2[200] = {0.};
-      Float_t dmu_dsa_charge[200] = {0.};
-      Int_t dmu_dsa_nMuonHits[200] = {0};
-      Int_t dmu_dsa_nValidMuonHits[200] = {0};
-      Int_t dmu_dsa_nValidMuonDTHits[200] = {0};
-      Int_t dmu_dsa_nValidMuonCSCHits[200] = {0};
-      Int_t dmu_dsa_nValidMuonRPCHits[200] = {0};
-      Int_t dmu_dsa_nValidStripHits[200] = {0};
-      Int_t dmu_dsa_nhits[200] = {0};
-      Int_t dmu_dsa_dtStationsWithValidHits[200] = {0};
-      Int_t dmu_dsa_cscStationsWithValidHits[200] = {0};
-      Int_t dmu_dsa_nsegments[200] = {0};
-      Float_t dmu_dgl_pt[200] = {0.};
-      Float_t dmu_dgl_eta[200] = {0.};
-      Float_t dmu_dgl_phi[200] = {0.};
-      Float_t dmu_dgl_ptError[200] = {0.};
-      Float_t dmu_dgl_dxy[200] = {0.};
-      Float_t dmu_dgl_dz[200] = {0.};
-      Float_t dmu_dgl_normalizedChi2[200] = {0.};
-      Float_t dmu_dgl_charge[200] = {0.};
-      Int_t dmu_dgl_nMuonHits[200] = {0};
-      Int_t dmu_dgl_nValidMuonHits[200] = {0};
-      Int_t dmu_dgl_nValidMuonDTHits[200] = {0};
-      Int_t dmu_dgl_nValidMuonCSCHits[200] = {0};
-      Int_t dmu_dgl_nValidMuonRPCHits[200] = {0};
-      Int_t dmu_dgl_nValidStripHits[200] = {0};
-      Int_t dmu_dgl_nhits[200] = {0};
-      Float_t dmu_dtk_pt[200] = {0.};
-      Float_t dmu_dtk_eta[200] = {0.};
-      Float_t dmu_dtk_phi[200] = {0.};
-      Float_t dmu_dtk_ptError[200] = {0.};
-      Float_t dmu_dtk_dxy[200] = {0.};
-      Float_t dmu_dtk_dz[200] = {0.};
-      Float_t dmu_dtk_normalizedChi2[200] = {0.};
-      Float_t dmu_dtk_charge[200] = {0.};
-      Int_t dmu_dtk_nMuonHits[200] = {0};
-      Int_t dmu_dtk_nValidMuonHits[200] = {0};
-      Int_t dmu_dtk_nValidMuonDTHits[200] = {0};
-      Int_t dmu_dtk_nValidMuonCSCHits[200] = {0};
-      Int_t dmu_dtk_nValidMuonRPCHits[200] = {0};
-      Int_t dmu_dtk_nValidStripHits[200] = {0};
-      Int_t dmu_dtk_nhits[200] = {0};
+      Float_t mu_iso03_sumPt[200]     = {0.};
+      Float_t mu_iso03_emEt[200]      = {0.};
+      Float_t mu_iso03_hadEt[200]     = {0.};
+      Float_t mu_pfIso03_charged[200] = {0.}; 
+      Float_t mu_pfIso03_neutral[200] = {0.};
+      Float_t mu_pfIso03_photon [200] = {0.};
+      Float_t mu_pfIso03_sumPU  [200] = {0.};
+      Float_t mu_pfIso04_charged[200] = {0.};
+      Float_t mu_pfIso04_neutral[200] = {0.};
+      Float_t mu_pfIso04_photon [200] = {0.};
+      Float_t mu_pfIso04_sumPU  [200] = {0.};
 
       // ----------------------------------
       // PrimaryVertices
@@ -274,9 +201,7 @@ ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) {
 
    counts = new TH1F("counts", "", 1, 0, 1);
 
-   dglToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedGlobalCollection"));
-   dsaToken = consumes<edm::View<reco::Track> >  (parameters.getParameter<edm::InputTag>("displacedStandAloneCollection"));
-   dmuToken = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("displacedMuonCollection"));
+   muToken = consumes<edm::View<reco::Muon> >  (parameters.getParameter<edm::InputTag>("muonCollection"));
    if (!isData) {
      theGenParticleCollection = consumes<edm::View<reco::GenParticle> >  (parameters.getParameter<edm::InputTag>("genParticleCollection"));
      thePrimaryVertexCollection = consumes<edm::View<reco::Vertex> >  (parameters.getParameter<edm::InputTag>("PrimaryVertexCollection"));
@@ -305,8 +230,6 @@ void ntuplizer::beginJob() {
    isData = parameters.getParameter<bool>("isData");
 
    // Load HLT paths
-   HLTPaths_.push_back("HLT_L2Mu10_NoVertex_NoBPTX3BX");
-   HLTPaths_.push_back("HLT_L2Mu10_NoVertex_NoBPTX");
 
    // TTree branches
    tree_out->Branch("event", &event, "event/I");
@@ -314,119 +237,48 @@ void ntuplizer::beginJob() {
    tree_out->Branch("run", &run, "run/I");
 
    // ----------------------------------
-   // displacedGlobalMuons
+   // Muons
    // ----------------------------------
-   tree_out->Branch("ndgl", &ndgl, "ndgl/I");
-   tree_out->Branch("dgl_pt", dgl_pt, "dgl_pt[ndgl]/F");
-   tree_out->Branch("dgl_eta", dgl_eta, "dgl_eta[ndgl]/F");
-   tree_out->Branch("dgl_phi", dgl_phi, "dgl_phi[ndgl]/F");
-   tree_out->Branch("dgl_ptError", dgl_ptError, "dgl_ptError[ndgl]/F");
-   tree_out->Branch("dgl_dxy", dgl_dxy, "dgl_dxy[ndgl]/F");
-   tree_out->Branch("dgl_dz", dgl_dz, "dgl_dz[ndgl]/F");
-   tree_out->Branch("dgl_normalizedChi2", dgl_normalizedChi2, "dgl_normalizedChi2[ndgl]/F");
-   tree_out->Branch("dgl_charge", dgl_charge, "dgl_charge[ndgl]/F");
-   tree_out->Branch("dgl_nMuonHits", dgl_nMuonHits, "dgl_nMuonHits[ndgl]/I");
-   tree_out->Branch("dgl_nValidMuonHits", dgl_nValidMuonHits, "dgl_nValidMuonHits[ndgl]/I");
-   tree_out->Branch("dgl_nValidMuonDTHits", dgl_nValidMuonDTHits, "dgl_nValidMuonDTHits[ndgl]/I");
-   tree_out->Branch("dgl_nValidMuonCSCHits", dgl_nValidMuonCSCHits, "dgl_nValidMuonCSCHits[ndgl]/I");
-   tree_out->Branch("dgl_nValidMuonRPCHits", dgl_nValidMuonRPCHits, "dgl_nValidMuonRPCHits[ndgl]/I");
-   tree_out->Branch("dgl_nValidStripHits", dgl_nValidStripHits, "dgl_nValidStripHits[ndgl]/I");
-   tree_out->Branch("dgl_nhits", dgl_nhits, "dgl_nhits[ndgl]/I");
-   tree_out->Branch("dgl_nLostMuonHits", dgl_nLostMuonHits, "dgl_nLostMuonHits[ndgl]/I");
-   tree_out->Branch("dgl_nLostMuonDTHits", dgl_nLostMuonDTHits, "dgl_nLostMuonDTHits[ndgl]/I");
-   tree_out->Branch("dgl_nLostMuonCSCHits", dgl_nLostMuonCSCHits, "dgl_nLostMuonCSCHits[ndgl]/I");
-   tree_out->Branch("dgl_nLostMuonRPCHits", dgl_nLostMuonRPCHits, "dgl_nLostMuonRPCHits[ndgl]/I");
+   tree_out->Branch("nmu", &nmu, "nmu/I");
+   tree_out->Branch("mu_isSTA", mu_isSTA, "mu_isSTA[nmu]/I");
+   tree_out->Branch("mu_isGLB", mu_isGLB, "mu_isGLB[nmu]/I");
+   tree_out->Branch("mu_isTRK", mu_isTRK, "mu_isTRK[nmu]/I");
+   tree_out->Branch("mu_isMatchesValid", mu_isMatchesValid, "mu_isMatchesValid[nmu]/I");
+   tree_out->Branch("mu_numberOfMatches", mu_numberOfMatches, "mu_numberOfMatches[nmu]/I");
+   tree_out->Branch("mu_numberOfChambers", mu_numberOfChambers, "mu_numberOfChambers[nmu]/I");
+   tree_out->Branch("mu_numberOfChambersCSCorDT", mu_numberOfChambersCSCorDT, "mu_numberOfChambersCSCorDT[nmu]/I");
+   tree_out->Branch("mu_numberOfMatchedStations", mu_numberOfMatchedStations, "mu_numberOfMatchedStations[nmu]/I");
+   tree_out->Branch("mu_numberOfMatchedRPCLayers", mu_numberOfMatchedRPCLayers, "mu_numberOfMatchedRPCLayers[nmu]/I");
+   tree_out->Branch("mu_pt", mu_pt, "mu_pt[nmu]/F");
+   tree_out->Branch("mu_eta", mu_eta, "mu_eta[nmu]/F");
+   tree_out->Branch("mu_phi", mu_phi, "mu_phi[nmu]/F");
+   tree_out->Branch("mu_ptError", mu_ptError, "mu_ptError[nmu]/F");
+   tree_out->Branch("mu_dxy", mu_dxy, "mu_dxy[nmu]/F");
+   tree_out->Branch("mu_dz", mu_dz, "mu_dz[nmu]/F");
+   tree_out->Branch("mu_normalizedChi2", mu_normalizedChi2, "mu_normalizedChi2[nmu]/F");
+   tree_out->Branch("mu_charge", mu_charge, "mu_charge[nmu]/F");
+   tree_out->Branch("mu_nMuonHits", mu_nMuonHits, "mu_nMuonHits[nmu]/I");
+   tree_out->Branch("mu_nValidMuonHits", mu_nValidMuonHits, "mu_nValidMuonHits[nmu]/I");
+   tree_out->Branch("mu_nValidMuonDTHits", mu_nValidMuonDTHits, "mu_nValidMuonDTHits[nmu]/I");
+   tree_out->Branch("mu_nValidMuonCSCHits", mu_nValidMuonCSCHits, "mu_nValidMuonCSCHits[nmu]/I");
+   tree_out->Branch("mu_nValidMuonRPCHits", mu_nValidMuonRPCHits, "mu_nValidMuonRPCHits[nmu]/I");
+   tree_out->Branch("mu_nValidStripHits", mu_nValidStripHits, "mu_nValidStripHits[nmu]/I");
+   tree_out->Branch("mu_nhits", mu_nhits, "mu_nhits[nmu]/I");
+   tree_out->Branch("mu_dtStationsWithValidHits", mu_dtStationsWithValidHits, "mu_dtStationsWithValidHits[nmu]/I");
+   tree_out->Branch("mu_cscStationsWithValidHits", mu_cscStationsWithValidHits, "mu_cscStationsWithValidHits[nmu]/I");
+   tree_out->Branch("mu_nsegments", mu_nsegments, "mu_nsegments[nmu]/I");
 
-   // ----------------------------------
-   // displacedStandAloneMuons
-   // ----------------------------------
-   tree_out->Branch("ndsa", &ndsa, "ndsa/I");
-   tree_out->Branch("dsa_pt", dsa_pt, "dsa_pt[ndsa]/F");
-   tree_out->Branch("dsa_eta", dsa_eta, "dsa_eta[ndsa]/F");
-   tree_out->Branch("dsa_phi", dsa_phi, "dsa_phi[ndsa]/F");
-   tree_out->Branch("dsa_ptError", dsa_ptError, "dsa_ptError[ndsa]/F");
-   tree_out->Branch("dsa_dxy", dsa_dxy, "dsa_dxy[ndsa]/F");
-   tree_out->Branch("dsa_dz", dsa_dz, "dsa_dz[ndsa]/F");
-   tree_out->Branch("dsa_normalizedChi2", dsa_normalizedChi2, "dsa_normalizedChi2[ndsa]/F");
-   tree_out->Branch("dsa_charge", dsa_charge, "dsa_charge[ndsa]/F");
-   tree_out->Branch("dsa_nMuonHits", dsa_nMuonHits, "dsa_nMuonHits[ndsa]/I");
-   tree_out->Branch("dsa_nValidMuonHits", dsa_nValidMuonHits, "dsa_nValidMuonHits[ndsa]/I");
-   tree_out->Branch("dsa_nValidMuonDTHits", dsa_nValidMuonDTHits, "dsa_nValidMuonDTHits[ndsa]/I");
-   tree_out->Branch("dsa_nValidMuonCSCHits", dsa_nValidMuonCSCHits, "dsa_nValidMuonCSCHits[ndsa]/I");
-   tree_out->Branch("dsa_nValidMuonRPCHits", dsa_nValidMuonRPCHits, "dsa_nValidMuonRPCHits[ndsa]/I");
-   tree_out->Branch("dsa_nValidStripHits", dsa_nValidStripHits, "dsa_nValidStripHits[ndsa]/I");
-   tree_out->Branch("dsa_nhits", dsa_nhits, "dsa_nhits[ndsa]/I");
-   tree_out->Branch("dsa_nLostMuonHits", dsa_nLostMuonHits, "dsa_nLostMuonHits[ndsa]/I");
-   tree_out->Branch("dsa_nLostMuonDTHits", dsa_nLostMuonDTHits, "dsa_nLostMuonDTHits[ndsa]/I");
-   tree_out->Branch("dsa_nLostMuonCSCHits", dsa_nLostMuonCSCHits, "dsa_nLostMuonCSCHits[ndsa]/I");
-   tree_out->Branch("dsa_nLostMuonRPCHits", dsa_nLostMuonRPCHits, "dsa_nLostMuonRPCHits[ndsa]/I");
-   tree_out->Branch("dsa_dtStationsWithValidHits", dsa_dtStationsWithValidHits, "dsa_dtStationsWithValidHits[ndsa]/I");
-   tree_out->Branch("dsa_cscStationsWithValidHits", dsa_cscStationsWithValidHits, "dsa_cscStationsWithValidHits[ndsa]/I");
-
-   // ----------------------------------
-   // displacedMuons
-   // ----------------------------------
-   tree_out->Branch("ndmu", &ndmu, "ndmu/I");
-   tree_out->Branch("dmu_isDSA", dmu_isDSA, "dmu_isDSA[ndmu]/I");
-   tree_out->Branch("dmu_isDGL", dmu_isDGL, "dmu_isDGL[ndmu]/I");
-   tree_out->Branch("dmu_isDTK", dmu_isDTK, "dmu_isDTK[ndmu]/I");
-   tree_out->Branch("dmu_isMatchesValid", dmu_isMatchesValid, "dmu_isMatchesValid[ndmu]/I");
-   tree_out->Branch("dmu_numberOfMatches", dmu_numberOfMatches, "dmu_numberOfMatches[ndmu]/I");
-   tree_out->Branch("dmu_numberOfChambers", dmu_numberOfChambers, "dmu_numberOfChambers[ndmu]/I");
-   tree_out->Branch("dmu_numberOfChambersCSCorDT", dmu_numberOfChambersCSCorDT, "dmu_numberOfChambersCSCorDT[ndmu]/I");
-   tree_out->Branch("dmu_numberOfMatchedStations", dmu_numberOfMatchedStations, "dmu_numberOfMatchedStations[ndmu]/I");
-   tree_out->Branch("dmu_numberOfMatchedRPCLayers", dmu_numberOfMatchedRPCLayers, "dmu_numberOfMatchedRPCLayers[ndmu]/I");
-   // dmu_dsa
-   tree_out->Branch("dmu_dsa_pt", dmu_dsa_pt, "dmu_dsa_pt[ndmu]/F");
-   tree_out->Branch("dmu_dsa_eta", dmu_dsa_eta, "dmu_dsa_eta[ndmu]/F");
-   tree_out->Branch("dmu_dsa_phi", dmu_dsa_phi, "dmu_dsa_phi[ndmu]/F");
-   tree_out->Branch("dmu_dsa_ptError", dmu_dsa_ptError, "dmu_dsa_ptError[ndmu]/F");
-   tree_out->Branch("dmu_dsa_dxy", dmu_dsa_dxy, "dmu_dsa_dxy[ndmu]/F");
-   tree_out->Branch("dmu_dsa_dz", dmu_dsa_dz, "dmu_dsa_dz[ndmu]/F");
-   tree_out->Branch("dmu_dsa_normalizedChi2", dmu_dsa_normalizedChi2, "dmu_dsa_normalizedChi2[ndmu]/F");
-   tree_out->Branch("dmu_dsa_charge", dmu_dsa_charge, "dmu_dsa_charge[ndmu]/F");
-   tree_out->Branch("dmu_dsa_nMuonHits", dmu_dsa_nMuonHits, "dmu_dsa_nMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nValidMuonHits", dmu_dsa_nValidMuonHits, "dmu_dsa_nValidMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nValidMuonDTHits", dmu_dsa_nValidMuonDTHits, "dmu_dsa_nValidMuonDTHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nValidMuonCSCHits", dmu_dsa_nValidMuonCSCHits, "dmu_dsa_nValidMuonCSCHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nValidMuonRPCHits", dmu_dsa_nValidMuonRPCHits, "dmu_dsa_nValidMuonRPCHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nValidStripHits", dmu_dsa_nValidStripHits, "dmu_dsa_nValidStripHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nhits", dmu_dsa_nhits, "dmu_dsa_nhits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_dtStationsWithValidHits", dmu_dsa_dtStationsWithValidHits, "dmu_dsa_dtStationsWithValidHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_cscStationsWithValidHits", dmu_dsa_cscStationsWithValidHits, "dmu_dsa_cscStationsWithValidHits[ndmu]/I");
-   tree_out->Branch("dmu_dsa_nsegments", dmu_dsa_nsegments, "dmu_dsa_nsegments[ndmu]/I");
-   // dmu_dgl
-   tree_out->Branch("dmu_dgl_pt", dmu_dgl_pt, "dmu_dgl_pt[ndmu]/F");
-   tree_out->Branch("dmu_dgl_eta", dmu_dgl_eta, "dmu_dgl_eta[ndmu]/F");
-   tree_out->Branch("dmu_dgl_phi", dmu_dgl_phi, "dmu_dgl_phi[ndmu]/F");
-   tree_out->Branch("dmu_dgl_ptError", dmu_dgl_ptError, "dmu_dgl_ptError[ndmu]/F");
-   tree_out->Branch("dmu_dgl_dxy", dmu_dgl_dxy, "dmu_dgl_dxy[ndmu]/F");
-   tree_out->Branch("dmu_dgl_dz", dmu_dgl_dz, "dmu_dgl_dz[ndmu]/F");
-   tree_out->Branch("dmu_dgl_normalizedChi2", dmu_dgl_normalizedChi2, "dmu_dgl_normalizedChi2[ndmu]/F");
-   tree_out->Branch("dmu_dgl_charge", dmu_dgl_charge, "dmu_dgl_charge[ndmu]/F");
-   tree_out->Branch("dmu_dgl_nMuonHits", dmu_dgl_nMuonHits, "dmu_dgl_nMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_dgl_nValidMuonHits", dmu_dgl_nValidMuonHits, "dmu_dgl_nValidMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_dgl_nValidMuonDTHits", dmu_dgl_nValidMuonDTHits, "dmu_dgl_nValidMuonDTHits[ndmu]/I");
-   tree_out->Branch("dmu_dgl_nValidMuonCSCHits", dmu_dgl_nValidMuonCSCHits, "dmu_dgl_nValidMuonCSCHits[ndmu]/I");
-   tree_out->Branch("dmu_dgl_nValidMuonRPCHits", dmu_dgl_nValidMuonRPCHits, "dmu_dgl_nValidMuonRPCHits[ndmu]/I");
-   tree_out->Branch("dmu_dgl_nValidStripHits", dmu_dgl_nValidStripHits, "dmu_dgl_nValidStripHits[ndmu]/I");
-   tree_out->Branch("dmu_dgl_nhits", dmu_dgl_nhits, "dmu_dgl_nhits[ndmu]/I");
-   // dmu_dtk
-   tree_out->Branch("dmu_dtk_pt", dmu_dtk_pt, "dmu_dtk_pt[ndmu]/F");
-   tree_out->Branch("dmu_dtk_eta", dmu_dtk_eta, "dmu_dtk_eta[ndmu]/F");
-   tree_out->Branch("dmu_dtk_phi", dmu_dtk_phi, "dmu_dtk_phi[ndmu]/F");
-   tree_out->Branch("dmu_dtk_ptError", dmu_dtk_ptError, "dmu_dtk_ptError[ndmu]/F");
-   tree_out->Branch("dmu_dtk_dxy", dmu_dtk_dxy, "dmu_dtk_dxy[ndmu]/F");
-   tree_out->Branch("dmu_dtk_dz", dmu_dtk_dz, "dmu_dtk_dz[ndmu]/F");
-   tree_out->Branch("dmu_dtk_normalizedChi2", dmu_dtk_normalizedChi2, "dmu_dtk_normalizedChi2[ndmu]/F");
-   tree_out->Branch("dmu_dtk_charge", dmu_dtk_charge, "dmu_dtk_charge[ndmu]/F");
-   tree_out->Branch("dmu_dtk_nMuonHits", dmu_dtk_nMuonHits, "dmu_dtk_nMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_dtk_nValidMuonHits", dmu_dtk_nValidMuonHits, "dmu_dtk_nValidMuonHits[ndmu]/I");
-   tree_out->Branch("dmu_dtk_nValidMuonDTHits", dmu_dtk_nValidMuonDTHits, "dmu_dtk_nValidMuonDTHits[ndmu]/I");
-   tree_out->Branch("dmu_dtk_nValidMuonCSCHits", dmu_dtk_nValidMuonCSCHits, "dmu_dtk_nValidMuonCSCHits[ndmu]/I");
-   tree_out->Branch("dmu_dtk_nValidMuonRPCHits", dmu_dtk_nValidMuonRPCHits, "dmu_dtk_nValidMuonRPCHits[ndmu]/I");
-   tree_out->Branch("dmu_dtk_nValidStripHits", dmu_dtk_nValidStripHits, "dmu_dtk_nValidStripHits[ndmu]/I");
-   tree_out->Branch("dmu_dtk_nhits", dmu_dtk_nhits, "dmu_dtk_nhits[ndmu]/I");
+   tree_out->Branch("mu_iso03_sumPt",     mu_iso03_sumPt,     "mu_iso03_sumPt[nmu]/F"    ); 
+   tree_out->Branch("mu_iso03_emEt",      mu_iso03_emEt,      "mu_iso03_emEt[nmu]/F"     ); 
+   tree_out->Branch("mu_iso03_hadEt",     mu_iso03_hadEt,     "mu_iso03_hadEt[nmu]/F"    ); 
+   tree_out->Branch("mu_pfIso03_charged", mu_pfIso03_charged, "mu_pfIso03_charged[nmu]/F"); 
+   tree_out->Branch("mu_pfIso03_neutral", mu_pfIso03_neutral, "mu_pfIso03_neutral[nmu]/F"); 
+   tree_out->Branch("mu_pfIso03_photon",  mu_pfIso03_photon,  "mu_pfIso03_photon[nmu]/F" ); 
+   tree_out->Branch("mu_pfIso03_sumPU",   mu_pfIso03_sumPU,   "mu_pfIso03_sumPU[nmu]/F"  ); 
+   tree_out->Branch("mu_pfIso04_charged", mu_pfIso04_charged, "mu_pfIso04_charged[nmu]/F"); 
+   tree_out->Branch("mu_pfIso04_neutral", mu_pfIso04_neutral, "mu_pfIso04_neutral[nmu]/F"); 
+   tree_out->Branch("mu_pfIso04_photon",  mu_pfIso04_photon,  "mu_pfIso04_photon[nmu]/F" ); 
+   tree_out->Branch("mu_pfIso04_sumPU",   mu_pfIso04_sumPU,   "mu_pfIso04_sumPU[nmu]/F"  ); 
 
    if (!isData) {
      // ----------------------------------
@@ -502,9 +354,7 @@ void ntuplizer::fillDescriptions(edm::ConfigurationDescriptions& descriptions) {
 // Analyze (per event)
 void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-   iEvent.getByToken(dglToken, dgls);
-   iEvent.getByToken(dsaToken, dsas);
-   iEvent.getByToken(dmuToken, dmuons);
+   iEvent.getByToken(muToken, muons);
    iEvent.getByToken(triggerBits_, triggerBits);
    if (!isData){
       iEvent.getByToken(thePrimaryVertexCollection, primaryvertices);
@@ -521,146 +371,42 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    run = iEvent.id().run();
 
    // ----------------------------------
-   // displacedGlobalMuons Collection
-   // ----------------------------------
-   ndgl = 0;
-   for (unsigned int i = 0; i < dgls->size(); i++) {
-     const reco::Track& dgl(dgls->at(i));
-     dgl_pt[ndgl] = dgl.pt();
-     dgl_eta[ndgl] = dgl.eta();
-     dgl_phi[ndgl] = dgl.phi();
-     dgl_ptError[ndgl] = dgl.ptError();
-     dgl_dxy[ndgl] = dgl.dxy();
-     dgl_dz[ndgl] = dgl.dz();
-     dgl_normalizedChi2[ndgl] = dgl.normalizedChi2();
-     dgl_charge[ndgl] = dgl.charge();
-
-     dgl_nMuonHits[ndgl] = dgl.hitPattern().numberOfMuonHits();
-     dgl_nValidMuonDTHits[ndgl] = dgl.hitPattern().numberOfValidMuonDTHits();
-     dgl_nValidMuonCSCHits[ndgl] = dgl.hitPattern().numberOfValidMuonCSCHits();
-     dgl_nValidMuonRPCHits[ndgl] = dgl.hitPattern().numberOfValidMuonRPCHits();
-     dgl_nValidMuonHits[ndgl] = dgl.hitPattern().numberOfValidMuonHits();
-     dgl_nValidStripHits[ndgl] = dgl.hitPattern().numberOfValidStripHits();
-     dgl_nhits[ndgl] = dgl.hitPattern().numberOfValidHits();
-
-     dgl_nLostMuonHits[ndgl] = dgl.hitPattern().numberOfLostMuonHits();
-     dgl_nLostMuonDTHits[ndgl] = dgl.hitPattern().numberOfLostMuonDTHits();
-     dgl_nLostMuonCSCHits[ndgl] = dgl.hitPattern().numberOfLostMuonCSCHits();
-     dgl_nLostMuonRPCHits[ndgl] = dgl.hitPattern().numberOfLostMuonRPCHits();
-     ndgl++;
-   }
-
-   // ----------------------------------
-   // displacedStandAloneMuons Collection
-   // ----------------------------------
-   ndsa = 0;
-   for (unsigned int i = 0; i < dsas->size(); i++) {
-     const reco::Track& dsa(dsas->at(i));
-     dsa_pt[ndsa] = dsa.pt();
-     dsa_eta[ndsa] = dsa.eta();
-     dsa_phi[ndsa] = dsa.phi();
-     dsa_ptError[ndsa] = dsa.ptError();
-     dsa_dxy[ndsa] = dsa.dxy();
-     dsa_dz[ndsa] = dsa.dz();
-     dsa_normalizedChi2[ndsa] = dsa.normalizedChi2();
-     dsa_charge[ndsa] = dsa.charge();
-
-     dsa_nMuonHits[ndsa] = dsa.hitPattern().numberOfMuonHits();
-     dsa_nValidMuonHits[ndsa] = dsa.hitPattern().numberOfValidMuonHits();
-     dsa_nValidMuonDTHits[ndsa] = dsa.hitPattern().numberOfValidMuonDTHits();
-     dsa_nValidMuonCSCHits[ndsa] = dsa.hitPattern().numberOfValidMuonCSCHits();
-     dsa_nValidMuonRPCHits[ndsa] = dsa.hitPattern().numberOfValidMuonRPCHits();
-     dsa_nValidStripHits[ndsa] = dsa.hitPattern().numberOfValidStripHits();
-     dsa_nhits[ndsa] = dsa.hitPattern().numberOfValidHits();
-
-     dsa_nLostMuonHits[ndsa] = dsa.hitPattern().numberOfLostMuonHits();
-     dsa_nLostMuonDTHits[ndsa] = dsa.hitPattern().numberOfLostMuonDTHits();
-     dsa_nLostMuonCSCHits[ndsa] = dsa.hitPattern().numberOfLostMuonCSCHits();
-     dsa_nLostMuonRPCHits[ndsa] = dsa.hitPattern().numberOfLostMuonRPCHits();
-
-     dsa_dtStationsWithValidHits[ndsa] = dsa.hitPattern().dtStationsWithValidHits();
-     dsa_cscStationsWithValidHits[ndsa] = dsa.hitPattern().cscStationsWithValidHits();
-
-     ndsa++;
-   }
-
-   // ----------------------------------
    // displacedMuons Collection
    // ----------------------------------
-   ndmu = 0;;
-   for (unsigned int i = 0; i < dmuons->size(); i++) {
-     std::cout << " - - ndmu: " << ndmu << std::endl;
-     const reco::Muon& dmuon(dmuons->at(i));
-     dmu_isDGL[ndmu] = dmuon.isGlobalMuon();
-     dmu_isDSA[ndmu] = dmuon.isStandAloneMuon();
-     dmu_isDTK[ndmu] = dmuon.isTrackerMuon();
-     dmu_isMatchesValid[ndmu] = dmuon.isMatchesValid();
-     dmu_numberOfMatches[ndmu] = dmuon.numberOfMatches();
-     dmu_numberOfChambers[ndmu] = dmuon.numberOfChambers();
-     dmu_numberOfChambersCSCorDT[ndmu] = dmuon.numberOfChambersCSCorDT();
-     dmu_numberOfMatchedStations[ndmu] = dmuon.numberOfMatchedStations();
-     dmu_numberOfMatchedRPCLayers[ndmu] = dmuon.numberOfMatchedRPCLayers();
-
-     // Access the DGL track associated to the displacedMuon
-     std::cout << "isGlobalMuon: " << dmuon.isGlobalMuon() << std::endl;
-     if ( dmuon.isGlobalMuon() ) {
-       const reco::Track* globalTrack = (dmuon.combinedMuon()).get();
-       dmu_dgl_pt[ndmu] = globalTrack->pt();
-       dmu_dgl_eta[ndmu] = globalTrack->eta();
-       dmu_dgl_phi[ndmu] = globalTrack->phi();
-       dmu_dgl_ptError[ndmu] = globalTrack->ptError();
-       dmu_dgl_dxy[ndmu] = globalTrack->dxy();
-       dmu_dgl_dz[ndmu] = globalTrack->dz();
-       dmu_dgl_normalizedChi2[ndmu] = globalTrack->normalizedChi2();
-       dmu_dgl_charge[ndmu] = globalTrack->charge();
-       dmu_dgl_nMuonHits[ndmu] = globalTrack->hitPattern().numberOfMuonHits();
-       dmu_dgl_nValidMuonHits[ndmu] = globalTrack->hitPattern().numberOfValidMuonHits();
-       dmu_dgl_nValidMuonDTHits[ndmu] = globalTrack->hitPattern().numberOfValidMuonDTHits();
-       dmu_dgl_nValidMuonCSCHits[ndmu] = globalTrack->hitPattern().numberOfValidMuonCSCHits();
-       dmu_dgl_nValidMuonRPCHits[ndmu] = globalTrack->hitPattern().numberOfValidMuonRPCHits();
-       dmu_dgl_nValidStripHits[ndmu] = globalTrack->hitPattern().numberOfValidStripHits();
-       dmu_dgl_nhits[ndmu] = globalTrack->hitPattern().numberOfValidHits();
-     } else {
-       dmu_dgl_pt[ndmu] = 0;
-       dmu_dgl_eta[ndmu] = 0;
-       dmu_dgl_phi[ndmu] = 0;
-       dmu_dgl_ptError[ndmu] = 0;
-       dmu_dgl_dxy[ndmu] = 0;
-       dmu_dgl_dz[ndmu] = 0;
-       dmu_dgl_normalizedChi2[ndmu] = 0;
-       dmu_dgl_charge[ndmu] = 0;
-       dmu_dgl_nMuonHits[ndmu] = 0;
-       dmu_dgl_nValidMuonHits[ndmu] = 0;
-       dmu_dgl_nValidMuonDTHits[ndmu] = 0;
-       dmu_dgl_nValidMuonCSCHits[ndmu] = 0;
-       dmu_dgl_nValidMuonRPCHits[ndmu] = 0;
-       dmu_dgl_nValidStripHits[ndmu] = 0;
-       dmu_dgl_nhits[ndmu] = 0;
-     }     
-
-     // Access the DSA track associated to the displacedMuon
-     std::cout << "isStandAloneMuon: " << dmuon.isStandAloneMuon() << std::endl;
-     if ( dmuon.isStandAloneMuon() ) {
-       const reco::Track* outerTrack = (dmuon.standAloneMuon()).get();
-       dmu_dsa_pt[ndmu] = outerTrack->pt();
-       dmu_dsa_eta[ndmu] = outerTrack->eta();
-       dmu_dsa_phi[ndmu] = outerTrack->phi();
-       dmu_dsa_ptError[ndmu] = outerTrack->ptError();
-       dmu_dsa_dxy[ndmu] = outerTrack->dxy();
-       dmu_dsa_dz[ndmu] = outerTrack->dz();
-       dmu_dsa_normalizedChi2[ndmu] = outerTrack->normalizedChi2();
-       dmu_dsa_charge[ndmu] = outerTrack->charge();
-       dmu_dsa_nMuonHits[ndmu] = outerTrack->hitPattern().numberOfMuonHits();
-       dmu_dsa_nValidMuonHits[ndmu] = outerTrack->hitPattern().numberOfValidMuonHits();
-       dmu_dsa_nValidMuonDTHits[ndmu] = outerTrack->hitPattern().numberOfValidMuonDTHits();
-       dmu_dsa_nValidMuonCSCHits[ndmu] = outerTrack->hitPattern().numberOfValidMuonCSCHits();
-       dmu_dsa_nValidMuonRPCHits[ndmu] = outerTrack->hitPattern().numberOfValidMuonRPCHits();
-       dmu_dsa_nValidStripHits[ndmu] = outerTrack->hitPattern().numberOfValidStripHits();
-       dmu_dsa_nhits[ndmu] = outerTrack->hitPattern().numberOfValidHits();
-       dmu_dsa_dtStationsWithValidHits[ndmu] = outerTrack->hitPattern().dtStationsWithValidHits();
-       dmu_dsa_cscStationsWithValidHits[ndmu] = outerTrack->hitPattern().cscStationsWithValidHits();
+   nmu = 0;;
+   for (unsigned int i = 0; i < muons->size(); i++) {
+     std::cout << " - - nmu: " << nmu << std::endl;
+     const reco::Muon& muon(muons->at(i));
+     mu_isDGL[nmu] = muon.isGlobalMuon();
+     mu_isDSA[nmu] = muon.isStandAloneMuon();
+     mu_isDTK[nmu] = muon.isTrackerMuon();
+     mu_isMatchesValid[nmu] = muon.isMatchesValid();
+     mu_numberOfMatches[nmu] = muon.numberOfMatches();
+     mu_numberOfChambers[nmu] = muon.numberOfChambers();
+     mu_numberOfChambersCSCorDT[nmu] = muon.numberOfChambersCSCorDT();
+     mu_numberOfMatchedStations[nmu] = muon.numberOfMatchedStations();
+     mu_numberOfMatchedRPCLayers[nmu] = muon.numberOfMatchedRPCLayers();
+     mu_pt[nmu] = muon.pt();
+     mu_eta[nmu] = muon.eta();
+     mu_phi[nmu] = muon.phi();
+     mu_ptError[nmu] = muon.ptError();
+     mu_dxy[nmu] = muon.dxy();
+     mu_dz[nmu] = muon.dz();
+     mu_normalizedChi2[nmu] = muon.normalizedChi2();
+     mu_charge[nmu] = muon.charge();
+     mu_nMuonHits[nmu] = muon.track()->hitPattern().numberOfMuonHits();
+     mu_nValidMuonHits[nmu] = muon.track()->hitPattern().numberOfValidMuonHits();
+     mu_nValidMuonDTHits[nmu] = muon.track()->hitPattern().numberOfValidMuonDTHits();
+     mu_nValidMuonCSCHits[nmu] = muon.track()->hitPattern().numberOfValidMuonCSCHits();
+     mu_nValidMuonRPCHits[nmu] = muon.track()->hitPattern().numberOfValidMuonRPCHits();
+     mu_nValidStripHits[nmu] = muon.track()->hitPattern().numberOfValidStripHits();
+     mu_nhits[nmu] = muon.track()->hitPattern().numberOfValidHits();
+     mu_dtStationsWithValidHits[nmu] = muon.track()->hitPattern().dtStationsWithValidHits();
+     mu_cscStationsWithValidHits[nmu] = muon.track()->hitPattern().cscStationsWithValidHits();
+     if ( muon.isStandAloneMuon() ) {
+       const reco::Track* outerTrack = (muon.standAloneMuon()).get();
        // Number of DT+CSC segments
-       /*unsigned int nsegments = 0;
+       unsigned int nsegments = 0;
        for (trackingRecHit_iterator hit = outerTrack->recHitsBegin(); hit != outerTrack->recHitsEnd(); ++hit) {
          if (!(*hit)->isValid()) continue;
          DetId id = (*hit)->geographicalId();
@@ -669,67 +415,24 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
            nsegments++;
          }
        }
-       dmu_dsa_nsegments[ndmu] = nsegments;*/
-       
+       mu_nsegments[nmu] = nsegments;
      } else {
-       dmu_dsa_pt[ndmu] = 0;
-       dmu_dsa_eta[ndmu] = 0;
-       dmu_dsa_phi[ndmu] = 0;
-       dmu_dsa_ptError[ndmu] = 0;
-       dmu_dsa_dxy[ndmu] = 0;
-       dmu_dsa_dz[ndmu] = 0;
-       dmu_dsa_normalizedChi2[ndmu] = 0;
-       dmu_dsa_charge[ndmu] = 0;
-       dmu_dsa_nMuonHits[ndmu] = 0;
-       dmu_dsa_nValidMuonHits[ndmu] = 0;
-       dmu_dsa_nValidMuonDTHits[ndmu] = 0;
-       dmu_dsa_nValidMuonCSCHits[ndmu] = 0;
-       dmu_dsa_nValidMuonRPCHits[ndmu] = 0;
-       dmu_dsa_nValidStripHits[ndmu] = 0;
-       dmu_dsa_nhits[ndmu] = 0;
-       dmu_dsa_dtStationsWithValidHits[ndsa] = 0;
-       dmu_dsa_cscStationsWithValidHits[ndsa] = 0;
-       dmu_dsa_nsegments[ndmu] = 0;
+       mu_nsegments[nmu] = 0;
      }
+     
+     mu_iso03_sumPt[nmu]     = muon.isolationR03().sumPt;
+     mu_iso03_emEt[nmu]      = muon.isolationR03().emEt;
+     mu_iso03_hadEt[nmu]     = muon.isolationR03().hadEt;
+     mu_pfIso03_charged[nmu] = muon.pfIsolationR03().sumChargedHadronPt; 
+     mu_pfIso03_neutral[nmu] = muon.pfIsolationR03().sumNeutralHadronEt;
+     mu_pfIso03_photon[nmu]  = muon.pfIsolationR03().sumPhotonEt;
+     mu_pfIso03_sumPU[nmu]   = muon.pfIsolationR03().sumPUPt;
+     mu_pfIso04_charged[nmu] = muon.pfIsolationR04().sumChargedHadronPt; 
+     mu_pfIso04_neutral[nmu] = muon.pfIsolationR04().sumNeutralHadronEt;
+     mu_pfIso04_photon[nmu]  = muon.pfIsolationR04().sumPhotonEt;
+     mu_pfIso04_sumPU[nmu]   = muon.pfIsolationR04().sumPUPt;
 
-     // Access the DTK track associated to the displacedMuon
-     std::cout << "isTrackerMuon: " << dmuon.isTrackerMuon() << std::endl;
-     if ( dmuon.isTrackerMuon() ) {
-       const reco::Track* innerTrack = (dmuon.track()).get();
-       dmu_dtk_pt[ndmu] = innerTrack->pt();
-       dmu_dtk_eta[ndmu] = innerTrack->eta();
-       dmu_dtk_phi[ndmu] = innerTrack->phi();
-       dmu_dtk_ptError[ndmu] = innerTrack->ptError();
-       dmu_dtk_dxy[ndmu] = innerTrack->dxy();
-       dmu_dtk_dz[ndmu] = innerTrack->dz();
-       dmu_dtk_normalizedChi2[ndmu] = innerTrack->normalizedChi2();
-       dmu_dtk_charge[ndmu] = innerTrack->charge();
-       dmu_dtk_nMuonHits[ndmu] = innerTrack->hitPattern().numberOfMuonHits();
-       dmu_dtk_nValidMuonHits[ndmu] = innerTrack->hitPattern().numberOfValidMuonHits();
-       dmu_dtk_nValidMuonDTHits[ndmu] = innerTrack->hitPattern().numberOfValidMuonDTHits();
-       dmu_dtk_nValidMuonCSCHits[ndmu] = innerTrack->hitPattern().numberOfValidMuonCSCHits();
-       dmu_dtk_nValidMuonRPCHits[ndmu] = innerTrack->hitPattern().numberOfValidMuonRPCHits();
-       dmu_dtk_nValidStripHits[ndmu] = innerTrack->hitPattern().numberOfValidStripHits();
-       dmu_dtk_nhits[ndmu] = innerTrack->hitPattern().numberOfValidHits();
-     } else {
-       dmu_dtk_pt[ndmu] = 0;
-       dmu_dtk_eta[ndmu] = 0;
-       dmu_dtk_phi[ndmu] = 0;
-       dmu_dtk_ptError[ndmu] = 0;
-       dmu_dtk_dxy[ndmu] = 0;
-       dmu_dtk_dz[ndmu] = 0;
-       dmu_dtk_normalizedChi2[ndmu] = 0;
-       dmu_dtk_charge[ndmu] = 0;
-       dmu_dtk_nMuonHits[ndmu] = 0;
-       dmu_dtk_nValidMuonHits[ndmu] = 0;
-       dmu_dtk_nValidMuonDTHits[ndmu] = 0;
-       dmu_dtk_nValidMuonCSCHits[ndmu] = 0;
-       dmu_dtk_nValidMuonRPCHits[ndmu] = 0;
-       dmu_dtk_nValidStripHits[ndmu] = 0;
-       dmu_dtk_nhits[ndmu] = 0;
-     }
-
-     ndmu++;
+     nmu++;
      std::cout << "End muon" << std::endl;
    }
 
