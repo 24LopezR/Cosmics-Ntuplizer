@@ -53,6 +53,6 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '130X_mcRun3_2023_realistic_v14
 
 ## Define the process to run 
 ## 
-process.load("Muon-Ntuplizer.Muon_RECO_ntuples_cfi")
+process.load("Muon_RECO_ntuples_cfi")
 
 process.p = cms.EndPath(process.ntuples)
