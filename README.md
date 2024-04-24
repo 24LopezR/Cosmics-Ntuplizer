@@ -7,12 +7,12 @@ The Ntuplizer is an EDAnalyzer. More information about this class and its struct
 
 ## How to install
 
-This branch is to be used in release CMSSW_14_1_0_pre1 or later. Commands to setup the analyzer are:
+This branch is to be used in release CMSSW_14_1_0_pre2 or later. Commands to setup the analyzer are:
 
 ```
-cmsrel CMSSW_*
+cmsrel CMSSW_14_1_0_pre2
 
-cd CMSSW_*/src
+cd CMSSW_14_1_0_pre2/src
 
 cmsenv
 
@@ -20,7 +20,7 @@ mkdir Analysis
 
 cd Analysis
 
-git clone *
+git clone git@github.com:24LopezR/Muon-Ntuplizer.git -b TkAlIssue_IsoEm
 
 scram b -j 8
 ```
