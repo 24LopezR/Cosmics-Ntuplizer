@@ -375,11 +375,11 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    // ----------------------------------
    nmu = 0;;
    for (unsigned int i = 0; i < muons->size(); i++) {
-     std::cout << " - - nmu: " << nmu << std::endl;
+     //std::cout << " - - nmu: " << nmu << std::endl;
      const reco::Muon& muon(muons->at(i));
-     mu_isDGL[nmu] = muon.isGlobalMuon();
-     mu_isDSA[nmu] = muon.isStandAloneMuon();
-     mu_isDTK[nmu] = muon.isTrackerMuon();
+     mu_isGLB[nmu] = muon.isGlobalMuon();
+     mu_isSTA[nmu] = muon.isStandAloneMuon();
+     mu_isTRK[nmu] = muon.isTrackerMuon();
      mu_isMatchesValid[nmu] = muon.isMatchesValid();
      mu_numberOfMatches[nmu] = muon.numberOfMatches();
      mu_numberOfChambers[nmu] = muon.numberOfChambers();
@@ -389,21 +389,23 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      mu_pt[nmu] = muon.pt();
      mu_eta[nmu] = muon.eta();
      mu_phi[nmu] = muon.phi();
-     mu_ptError[nmu] = muon.ptError();
-     mu_dxy[nmu] = muon.dxy();
-     mu_dz[nmu] = muon.dz();
-     mu_normalizedChi2[nmu] = muon.normalizedChi2();
-     mu_charge[nmu] = muon.charge();
-     mu_nMuonHits[nmu] = muon.track()->hitPattern().numberOfMuonHits();
-     mu_nValidMuonHits[nmu] = muon.track()->hitPattern().numberOfValidMuonHits();
-     mu_nValidMuonDTHits[nmu] = muon.track()->hitPattern().numberOfValidMuonDTHits();
-     mu_nValidMuonCSCHits[nmu] = muon.track()->hitPattern().numberOfValidMuonCSCHits();
-     mu_nValidMuonRPCHits[nmu] = muon.track()->hitPattern().numberOfValidMuonRPCHits();
-     mu_nValidStripHits[nmu] = muon.track()->hitPattern().numberOfValidStripHits();
-     mu_nhits[nmu] = muon.track()->hitPattern().numberOfValidHits();
-     mu_dtStationsWithValidHits[nmu] = muon.track()->hitPattern().dtStationsWithValidHits();
-     mu_cscStationsWithValidHits[nmu] = muon.track()->hitPattern().cscStationsWithValidHits();
-     if ( muon.isStandAloneMuon() ) {
+     const reco::TrackRef trackRef = muon.track();
+     if (trackRef.isNonnull()) {
+       mu_dxy[nmu] = trackRef->dxy();
+       mu_dz[nmu] = trackRef->dz();
+       mu_normalizedChi2[nmu] = trackRef->normalizedChi2();
+       mu_charge[nmu] = trackRef->charge();
+       mu_nMuonHits[nmu] = trackRef->hitPattern().numberOfMuonHits();
+       mu_nValidMuonHits[nmu] = trackRef->hitPattern().numberOfValidMuonHits();
+       mu_nValidMuonDTHits[nmu] = trackRef->hitPattern().numberOfValidMuonDTHits();
+       mu_nValidMuonCSCHits[nmu] = trackRef->hitPattern().numberOfValidMuonCSCHits();
+       mu_nValidMuonRPCHits[nmu] = trackRef->hitPattern().numberOfValidMuonRPCHits();
+       mu_nValidStripHits[nmu] = trackRef->hitPattern().numberOfValidStripHits();
+       mu_nhits[nmu] = trackRef->hitPattern().numberOfValidHits();
+       mu_dtStationsWithValidHits[nmu] = trackRef->hitPattern().dtStationsWithValidHits();
+       mu_cscStationsWithValidHits[nmu] = trackRef->hitPattern().cscStationsWithValidHits();
+     }
+     /**if ( muon.isStandAloneMuon() ) {
        const reco::Track* outerTrack = (muon.standAloneMuon()).get();
        // Number of DT+CSC segments
        unsigned int nsegments = 0;
@@ -418,7 +420,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
        mu_nsegments[nmu] = nsegments;
      } else {
        mu_nsegments[nmu] = 0;
-     }
+     }**/
      
      mu_iso03_sumPt[nmu]     = muon.isolationR03().sumPt;
      mu_iso03_emEt[nmu]      = muon.isolationR03().emEt;
@@ -433,7 +435,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
      mu_pfIso04_sumPU[nmu]   = muon.pfIsolationR04().sumPUPt;
 
      nmu++;
-     std::cout << "End muon" << std::endl;
+     //std::cout << "End muon" << std::endl;
    }
 
    if (!isData) {
