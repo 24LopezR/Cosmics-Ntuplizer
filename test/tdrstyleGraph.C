@@ -11,7 +11,7 @@ void setTDRStyle(bool fatline=true) {
   tdrStyle->SetCanvasBorderMode(0);
   tdrStyle->SetCanvasBorderSize(1);
   tdrStyle->SetCanvasColor(kWhite);
-  tdrStyle->SetCanvasDefH(600); //Height of canvas
+  tdrStyle->SetCanvasDefH(800); //Height of canvas
   tdrStyle->SetCanvasDefW(800); //Width of canvas
   tdrStyle->SetCanvasDefX(0);   //POsition on screen
   tdrStyle->SetCanvasDefY(0);
@@ -69,11 +69,11 @@ void setTDRStyle(bool fatline=true) {
   // tdrStyle->SetStatY(Float_t y = 0);
 
   // Margins:
-  tdrStyle->SetPadTopMargin(0.11);
-  tdrStyle->SetPadBottomMargin(0.11);
-  tdrStyle->SetPadLeftMargin(0.11);
+  tdrStyle->SetPadTopMargin(0.08);
+  tdrStyle->SetPadBottomMargin(0.13);
+  tdrStyle->SetPadLeftMargin(0.13);
   //tdrStyle->SetPadRightMargin(0.05);
-  tdrStyle->SetPadRightMargin(0.11);
+  tdrStyle->SetPadRightMargin(0.10);
 
   // For the Global title:
   tdrStyle->SetOptTitle(1);
