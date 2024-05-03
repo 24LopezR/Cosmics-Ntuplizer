@@ -1,3 +1,5 @@
+<use name="Geometry/Records"/>
+<use name="Geometry/TrackerGeometryBuilder"/>
 <use name="clhep"/>
 <use name="HepMC"/>
 <use name="ROOT"/>

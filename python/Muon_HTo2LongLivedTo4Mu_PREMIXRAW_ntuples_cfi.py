@@ -3,6 +3,7 @@ import FWCore.ParameterSet.Config as cms
 ntuples = cms.EDAnalyzer('ntuplizer',
     nameOfOutput = cms.string('NTuples_fromGENSIM_v0.root'),
     isData                        = cms.bool(False),
+    verbose                       = cms.bool(False),
     EventInfo                     = cms.InputTag("generator"),
     RunInfo                       = cms.InputTag("generator"),
     #muonCollection                = cms.InputTag("muons"),
@@ -19,7 +20,7 @@ ntuples = cms.EDAnalyzer('ntuplizer',
     TrackerHitsTOBHighTofCollection = cms.InputTag("g4SimHits","TrackerHitsTOBHighTof", "SIM"),
     TrackerHitsTOBLowTofCollection = cms.InputTag("g4SimHits","TrackerHitsTOBLowTof" , "SIM"),
 
-    genParticleCollection         = cms.InputTag("genParticles","","HLT"),
+    genParticleCollection         = cms.InputTag("genParticles","","SIM"),
     SimTrackCollection            = cms.InputTag("g4SimHits","","SIM"),
     #bits       = cms.InputTag("TriggerResults","","HLT"),
 )
