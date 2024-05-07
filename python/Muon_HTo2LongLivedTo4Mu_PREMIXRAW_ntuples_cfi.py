@@ -1,9 +1,10 @@
 import FWCore.ParameterSet.Config as cms
 
 ntuples = cms.EDAnalyzer('ntuplizer',
-    nameOfOutput = cms.string('NTuples_fromGENSIM_v0.root'),
+    nameOfOutput = cms.string('/eos/user/r/rlopezru/NTuples_fromGENSIM_v1.root'),
     isData                        = cms.bool(False),
-    verbose                       = cms.bool(False),
+    verbose                       = cms.bool(True),
+    dRGenSim                      = cms.double(0.01),
     EventInfo                     = cms.InputTag("generator"),
     RunInfo                       = cms.InputTag("generator"),
     #muonCollection                = cms.InputTag("muons"),

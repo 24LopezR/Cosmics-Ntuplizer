@@ -22,6 +22,8 @@ vardict['simHit_x']        = {'varexp': 'simHit_globalPosition_x', 'title': 'X o
 vardict['simHit_y']        = {'varexp': 'simHit_globalPosition_y', 'title': 'Y of sim hit', 'name': 'y (cm)', 'xmin': -150, 'xmax': 150, 'nbins': 75}
 vardict['simHit_z']        = {'varexp': 'simHit_globalPosition_z', 'title': 'Z of sim hit', 'name': 'z (cm)', 'xmin': -100, 'xmax': 100, 'nbins': 50}
 vardict['simHit_tof']      = {'varexp': 'simHit_tof', 'title': 'Time of flight of sim hit', 'name': 't (ns)', 'xmin': -1, 'xmax': 24, 'nbins': 25}
+vardict['simHit_genLxy']   = {'varexp': 'simHit_isHardProcess*simHit_genLxy', 'title': 'Lxy of mother genParticle (cm)', 'name': 'Lxy (cm)', 'xmin': 0, 'xmax': 10000, 'nbins': 50}
+vardict['simHit_genLxy_zoom']   = {'varexp': 'simHit_isHardProcess*simHit_genLxy', 'title': 'Lxy of mother genParticle (cm)', 'name': 'Lxy (cm)', 'xmin': 0, 'xmax': 100, 'nbins': 50}
 
 ###################################################################################
 ## Parsing
@@ -47,6 +49,7 @@ def plot1D(h, option='HIST', outputfilename='plot'):
     c.cd()
     h.SetLineWidth(2)
     h.Draw(option)
+    #c.SetLogy(1)
     
     latex = R.TLatex()
     latex.SetNDC();
@@ -56,6 +59,8 @@ def plot1D(h, option='HIST', outputfilename='plot'):
     latex.SetTextAlign(11);
     latex.SetTextSize(0.04);
     latex.DrawLatex(0.15, 0.9, r"#bf{CMS} #it{Private work} #sqrt{s} = 13.6 TeV")
+    latex.SetTextSize(0.03);
+    latex.DrawLatex(0.15, 0.83, r"Selection: #mu from #tilde{t} decay with L_{xy,gen}#geq 100 cm")
     c.SaveAs(www+outputfilename+".png")
     c.SaveAs(www+outputfilename+".pdf")
 
@@ -72,6 +77,8 @@ def plot2D(h, option='COLZ', outputfilename='plot'):
     latex.SetTextAlign(11);
     latex.SetTextSize(0.04);
     latex.DrawLatex(0.15, 0.9, r"#bf{CMS} #it{Private work} #sqrt{s} = 13.6 TeV")
+    latex.SetTextSize(0.03);
+    latex.DrawLatex(0.15, 0.83, r"Selection: #mu from #tilde{t}")# decay with L_{xy,gen}#geq 100 cm")
     c.SaveAs(www+outputfilename+".png")
     c.SaveAs(www+outputfilename+".pdf")
 
