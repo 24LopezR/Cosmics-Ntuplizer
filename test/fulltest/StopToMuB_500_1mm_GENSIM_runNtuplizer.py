@@ -18,7 +18,7 @@ nEvents = 20
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
-listOfFiles = ['file:/eos/user/r/rlopezru/DisplacedDimuons/sim_fulltest/output_StopToMuB_500_1_GS.root']
+listOfFiles = ['file:/eos/user/r/rlopezru/DisplacedDimuons/sim_fulltest/CMSSW_12_4_11_patch3/output_StopToMuB_500_1_GS.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),

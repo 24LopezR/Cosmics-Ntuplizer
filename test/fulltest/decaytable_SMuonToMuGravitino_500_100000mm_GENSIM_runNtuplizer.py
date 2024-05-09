@@ -18,7 +18,7 @@ nEvents = 20
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
-listOfFiles = ['file:/eos/user/r/rlopezru/DisplacedDimuons/sim_fulltest/CMSSW_12_4_11_patch3/output_StopToMuB_500_100000_GS.root']
+listOfFiles = ['file:/eos/user/r/rlopezru/DisplacedDimuons/sim_fulltest/CMSSW_12_4_11_patch3/output_SMuonToMuGravitino_500_100000_GS.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),
@@ -28,7 +28,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '124X_mcRun3_2022_realistic_pos
 
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
-  maxEventsToPrint = cms.untracked.int32(0),
+  maxEventsToPrint = cms.untracked.int32(-1),
   printVertex = cms.untracked.bool(False),
   printOnlyHardInteraction = cms.untracked.bool(False), # Print only status=3 particles. This will not work for Pythia8, which does not have any such particles.
   src = cms.InputTag("genParticles")
@@ -37,5 +37,5 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 ## Define the process to run 
 ## 
 process.load("Analysis.Muon-Ntuplizer.DisplacedSUSY_GENSIM_ntuples_cfi")
-process.ntuples.nameOfOutput = 'Ntuples_GENSIM_StopToMuB_500_100000.root'
-process.p = cms.EndPath(process.printTree + process.ntuples)
+process.ntuples.nameOfOutput = 'Ntuples_GENSIM_SMuonToMuGravitino_500_100000.root'
+process.p = cms.EndPath(process.printTree)

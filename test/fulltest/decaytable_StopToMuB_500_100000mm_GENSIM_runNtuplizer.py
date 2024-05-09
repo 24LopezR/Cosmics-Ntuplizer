@@ -28,7 +28,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '124X_mcRun3_2022_realistic_pos
 
 process.load("SimGeneral.HepPDTESSource.pythiapdt_cfi")
 process.printTree = cms.EDAnalyzer("ParticleListDrawer",
-  maxEventsToPrint = cms.untracked.int32(0),
+  maxEventsToPrint = cms.untracked.int32(-1),
   printVertex = cms.untracked.bool(False),
   printOnlyHardInteraction = cms.untracked.bool(False), # Print only status=3 particles. This will not work for Pythia8, which does not have any such particles.
   src = cms.InputTag("genParticles")
@@ -38,4 +38,4 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 ## 
 process.load("Analysis.Muon-Ntuplizer.DisplacedSUSY_GENSIM_ntuples_cfi")
 process.ntuples.nameOfOutput = 'Ntuples_GENSIM_StopToMuB_500_100000.root'
-process.p = cms.EndPath(process.printTree + process.ntuples)
+process.p = cms.EndPath(process.printTree)
