@@ -15,9 +15,9 @@ vardict = {}
 vardict['mu_phi']        = {'name': '#phi', 'xmin': -3.2, 'xmax': 3.2, 'nbins': 100}
 vardict['mu_eta']        = {'name': '#eta', 'xmin': -3., 'xmax': 3., 'nbins': 100}
 vardict['mu_iso03_emEt'] = {'name': 'Isolation EmEt', 'xmin': 0., 'xmax': 10, 'nbins': 100}
-vardict['mu_iso03_emEt/mu_pt'] = {'name': 'Isolation EmEt / pT', 'xmin': 0., 'xmax': 0.2, 'nbins': 100}
+vardict['mu_iso03_emEt/mu_pt'] = {'name': 'Isolation EmEt / pT', 'xmin': 0., 'xmax': 3.0, 'nbins': 100}
 vardict['mu_iso03_hadEt'] = {'name': 'Isolation hadEt', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
-vardict['mu_iso03_hadEt/mu_pt'] = {'name': 'Isolation hadEt / pT', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
+vardict['mu_iso03_hadEt/mu_pt'] = {'name': 'Isolation hadEt / pT', 'xmin': 0., 'xmax': 8.0, 'nbins': 50}
 vardict['mu_iso03_sumPt'] = {'name': 'Isolation sumPt', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
 vardict['mu_iso03_sumPt/mu_pt'] = {'name': 'Isolation sumPt / pT', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
 
@@ -26,10 +26,12 @@ vardict['mu_iso03_sumPt/mu_pt'] = {'name': 'Isolation sumPt / pT', 'xmin': 0., '
 parser = ArgumentParser()
 parser.add_argument('--infile', dest='inputfile', type=str, help='Input .root NTuple')
 parser.add_argument('--var'   , dest='var_'     , type=str, help='Variable(s) to plot', nargs='*', choices=vardict.keys())
+parser.add_argument('--sel'   , dest='sel_'     , type=str, help='Selection')
 parser.add_argument('--imgname', dest='imgname',  type=str, help='Name of output plot image', default='plot')
 args = parser.parse_args()
 inputfile = args.inputfile
 var_ = list(args.var_)
+sel_ = args.sel_
 imgname = args.imgname
 ###################################################################################
 
@@ -99,7 +101,7 @@ if __name__=='__main__':
         xmax   = vardict[var_[0]]['xmax'] 
         hToDraw = R.TH1F("hToDraw", title, nbinsx, xmin, xmax)
         varDraw = f'{var_[0]}>>+hToDraw'
-        selDraw = '1'
+        selDraw = sel_
         optDraw = ''
         print(varDraw, selDraw, optDraw)
         chain.Draw(varDraw, selDraw, optDraw)
