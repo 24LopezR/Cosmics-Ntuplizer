@@ -40,7 +40,7 @@ scram b -j 8
 Generate some events (2 for this cfg)
 
 ```
-cd [path-to-config-file] ./SMuonToMuGravitino-M_500_ctau_100000mm_TuneCP5_13p6TeV_pythia8_cff.py
+cd /afs/cern.ch/user/r/rlopezru/public/ForSlava/SMuonToMuGravitino-M_500_ctau_100000mm_TuneCP5_13p6TeV_pythia8_cff.py ./SMuonToMuGravitino-M_500_ctau_100000mm_TuneCP5_13p6TeV_pythia8_cff.py
 
 cmsRun SMuonToMuGravitino-M_500_ctau_100000mm_TuneCP5_13p6TeV_pythia8_cff.py &> log_GENSIM.log
 ```
@@ -49,7 +49,7 @@ Analyze GENSIM output file to print SimHits and SimTracks.
 In file test/SMuonToMuGravitino_500_100000mm_GENSIM_runNtuplizer.py, you may need to modify input file name.
 
 ```
-cd Analysis/Muon-Ntuplizer/test/SMuonToMuGravitino_500_100000mm_GENSIM_runNtuplizer.py
+cd Analysis/Muon-Ntuplizer/test
 
 cmsRun SMuonToMuGravitino_500_100000mm_GENSIM_runNtuplizer.py &> log_Analyzer.log
 ```
