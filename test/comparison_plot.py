@@ -24,12 +24,14 @@ vardict['mu_iso03_sumPt/mu_pt'] = {'name': 'Isolation sumPt / pT', 'xmin': 0., '
 ###################################################################################
 ## Parsing
 parser = ArgumentParser()
-parser.add_argument('--infile', dest='inputfile', type=str, help='Input .root NTuple')
+parser.add_argument('--infile1', dest='inputfile1', type=str, help='Input .root NTuple')
+parser.add_argument('--infile2', dest='inputfile2', type=str, help='Input .root NTuple')
 parser.add_argument('--var'   , dest='var_'     , type=str, help='Variable(s) to plot', nargs='*', choices=vardict.keys())
 parser.add_argument('--sel'   , dest='sel_'     , type=str, help='Selection')
 parser.add_argument('--imgname', dest='imgname',  type=str, help='Name of output plot image', default='plot')
 args = parser.parse_args()
-inputfile = args.inputfile
+inputfile1 = args.inputfile1
+inputfile2 = args.inputfile2
 var_ = list(args.var_)
 sel_ = args.sel_
 imgname = args.imgname
@@ -40,14 +42,17 @@ if len(var_) == 2: plotType = '2D'
 if len(var_) == 3: plotType = '3D'
 treeName = 'Events'
 
-def plot1D(h, option='HIST', outputfilename='plot'):
+def plot1D(h1, h2, option='HIST', outputfilename='plot'):
     c = R.TCanvas("c","c")
     c.cd()
-    h.GetXaxis().SetTitle(h.GetXaxis().GetTitle())
-    h.SetTitle(h.GetTitle())
-    h.GetYaxis().SetTitle("N events")
-    h.SetLineWidth(2)
-    h.Draw(option)
+    h1.GetXaxis().SetTitle(h1.GetXaxis().GetTitle())
+    h1.SetTitle(h1.GetTitle())
+    h1.GetYaxis().SetTitle("N events")
+    h1.SetLineWidth(2)
+    h1.Draw(option)
+    h1.SetLineColor(R.kRed)
+    h2.SetLineColor(R.kBlue)
+    h2.Draw(option+',SAME')
     
     '''latex = R.TLatex()
     latex.SetNDC();
@@ -84,9 +89,12 @@ if __name__=='__main__':
     R.gROOT.SetBatch(1)
     R.setTDRStyle()
 
-    chain = R.TChain(treeName)
-    chain.Add(inputfile)
-    print(f"Entries: {chain.GetEntries()}")
+    chain1 = R.TChain(treeName)
+    chain1.Add(inputfile1)
+    print(f"Entries: {chain1.GetEntries()}")
+    chain2 = R.TChain(treeName)
+    chain2.Add(inputfile2)
+    print(f"Entries: {chain2.GetEntries()}")
 
     #f = R.TFile.Open(inputfile)
     #tree = f.Get("Events")
@@ -99,14 +107,19 @@ if __name__=='__main__':
         nbinsx = vardict[var_[0]]['nbins']
         xmin   = vardict[var_[0]]['xmin'] 
         xmax   = vardict[var_[0]]['xmax'] 
-        hToDraw = R.TH1F("hToDraw", title, nbinsx, xmin, xmax)
-        varDraw = f'{var_[0]}>>+hToDraw'
+        hToDraw1 = R.TH1F("hToDraw1", title, nbinsx, xmin, xmax)
+        varDraw = f'{var_[0]}>>+hToDraw1'
         selDraw = sel_
         optDraw = ''
         print(varDraw, selDraw, optDraw)
-        chain.Draw(varDraw, selDraw, optDraw)
-        hToDraw.SetTitle(hToDraw.GetTitle() + " [{0}]".format(hToDraw.GetEntries()))
-        plot1D(hToDraw, option='HIST', outputfilename=imgname)
+        chain1.Draw(varDraw, selDraw, optDraw)
+        hToDraw1.SetTitle(hToDraw1.GetTitle() + " [{0}]".format(hToDraw1.GetEntries()))
+        hToDraw2 = R.TH1F("hToDraw2", title, nbinsx, xmin, xmax)
+        varDraw = f'{var_[0]}>>+hToDraw2'
+        print(varDraw, selDraw, optDraw)
+        chain2.Draw(varDraw, selDraw, optDraw)
+        hToDraw2.SetTitle(hToDraw2.GetTitle() + " [{0}]".format(hToDraw2.GetEntries()))
+        plot1D(hToDraw1, hToDraw2, option='HIST', outputfilename=imgname)
 
     if plotType == '2D':
         title          = f"ZMM 14TeV: {vardict[var_[0]]['name']} vs {vardict[var_[1]]['name']};{vardict[var_[0]]['name']};{vardict[var_[1]]['name']}"
