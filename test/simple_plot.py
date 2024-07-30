@@ -12,14 +12,16 @@ if not os.path.exists(www):
 shutil.copyfile(indexfilepath, www+'index.php')
 
 vardict = {}
-vardict['mu_phi']        = {'name': '#phi', 'xmin': -3.2, 'xmax': 3.2, 'nbins': 100}
-vardict['mu_eta']        = {'name': '#eta', 'xmin': -3., 'xmax': 3., 'nbins': 100}
+vardict['mu_phi']        = {'name': '#phi', 'xmin': -3.2, 'xmax': 3.2, 'nbins': 96}
+vardict['mu_eta']        = {'name': '#eta', 'xmin': -3., 'xmax': 3., 'nbins': 96}
 vardict['mu_iso03_emEt'] = {'name': 'Isolation EmEt', 'xmin': 0., 'xmax': 10, 'nbins': 100}
 vardict['mu_iso03_emEt/mu_pt'] = {'name': 'Isolation EmEt / pT', 'xmin': 0., 'xmax': 0.2, 'nbins': 100}
 vardict['mu_iso03_hadEt'] = {'name': 'Isolation hadEt', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
 vardict['mu_iso03_hadEt/mu_pt'] = {'name': 'Isolation hadEt / pT', 'xmin': 0., 'xmax': 0.5, 'nbins': 50}
 vardict['mu_iso03_sumPt'] = {'name': 'Isolation sumPt', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
 vardict['mu_iso03_sumPt/mu_pt'] = {'name': 'Isolation sumPt / pT', 'xmin': 0., 'xmax': 0.2, 'nbins': 50}
+
+vardict['(mu_iso03_emEt+mu_iso03_hadEt+mu_iso03_sumPt)/mu_pt'] = {'name': 'Isolation / pT', 'xmin': 0., 'xmax': 1., 'nbins': 50}
 
 ###################################################################################
 ## Parsing
@@ -95,13 +97,13 @@ if __name__=='__main__':
     #setTDRStyle()
 
     if plotType == '1D':
-        title          = f"{vardict[var_[0]]['name']}"
+        title          = f";{vardict[var_[0]]['name']};N events"
         nbinsx = vardict[var_[0]]['nbins']
         xmin   = vardict[var_[0]]['xmin'] 
         xmax   = vardict[var_[0]]['xmax'] 
         hToDraw = R.TH1F("hToDraw", title, nbinsx, xmin, xmax)
         varDraw = f'{var_[0]}>>+hToDraw'
-        selDraw = sel_
+        selDraw = f'({sel_})'
         optDraw = ''
         print(varDraw, selDraw, optDraw)
         chain.Draw(varDraw, selDraw, optDraw)
@@ -124,7 +126,7 @@ if __name__=='__main__':
 
     if plotType == '3D':
         title          = f"ZMM 14TeV: {vardict[var_[2]]['name']};{vardict[var_[0]]['name']};{vardict[var_[1]]['name']}"
-        nbinsx, nbinsy = vardict[var_[0]]['nbins']//4, vardict[var_[1]]['nbins']//4
+        nbinsx, nbinsy = vardict[var_[0]]['nbins']//6, vardict[var_[1]]['nbins']//6
         xmin, ymin     = vardict[var_[0]]['xmin'] , vardict[var_[1]]['xmin']
         xmax, ymax     = vardict[var_[0]]['xmax'] , vardict[var_[1]]['xmax']
         hToDraw = R.TProfile2D("hToDraw", title, nbinsx, xmin, xmax, nbinsy, ymin, ymax)

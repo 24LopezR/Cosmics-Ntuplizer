@@ -114,6 +114,7 @@ if __name__=='__main__':
         print(varDraw, selDraw, optDraw)
         chain1.Draw(varDraw, selDraw, optDraw)
         hToDraw1.SetTitle(hToDraw1.GetTitle() + " [{0}]".format(hToDraw1.GetEntries()))
+        
         hToDraw2 = R.TH1F("hToDraw2", title, nbinsx, xmin, xmax)
         varDraw = f'{var_[0]}>>+hToDraw2'
         print(varDraw, selDraw, optDraw)

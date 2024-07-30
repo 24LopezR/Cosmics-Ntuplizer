@@ -25,7 +25,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 # Read events
 #listOfFiles = [f'/store/user/rlopezru/RelValZMM_14/GEN-SIM-RECO/240710_154415/0000/output_{i}.root' for i in range(1,20)]
-listOfFiles = ['file:/eos/user/r/rlopezru/MuonReco/TKAlIssue/RECO/FinalTest_ZMM_14TeV_GEN-SIM-RECO_target_v1.root']
+listOfFiles = ['file:/eos/user/r/rlopezru/MuonReco/TKAlIssue/RECO/FinalTest_ZMM_14TeV_GEN-SIM-RECO_target_v5_mixed.root']
 #listOfFiles = ['file:/afs/cern.ch/user/r/rlopezru/private/MuonPOG/TkAlIssue/CMSSW_14_1_0_pre3/src/output.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
@@ -38,7 +38,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '130X_mcRun3_2023_realistic_v14
 ## 
 process.load("Analysis.Muon-Ntuplizer.Muon_RECO_RelValZMM_14_ntuples_cfi")
 
-process.ntuples.nameOfOutput = '/eos/user/r/rlopezru/MuonReco/TKAlIssue/NTuples_FinalTest_RelValZMM_14_target_v2.root'
+process.ntuples.nameOfOutput = '/eos/user/r/rlopezru/MuonReco/TKAlIssue/NTuples_FinalTest_RelValZMM_14_target_v5_mixed.root'
 #process.ntuples.nameOfOutput = '2ndFix_test.root'
 
 process.p = cms.EndPath(process.ntuples)
