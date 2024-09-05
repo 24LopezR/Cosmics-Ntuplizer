@@ -117,7 +117,7 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       bool printGen = true;
       bool printSimTracks = true;
       bool printHits = true;
-      double dRGenSim = 1.0;
+      double dRGenSim = 2.0;
 
       //
       // --- Tokens and Handles
@@ -419,26 +419,39 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     // Loop over gen particles
     for (size_t k = 0; k < genParticles->size(); k++) {
       const reco::GenParticle &gen = (*genParticles)[k];
-      if (abs(gen.pdgId()) != 13 and abs(gen.pdgId()) != 1000006 and abs(gen.pdgId()) != 1000013) {continue;}
+      if (!(abs(gen.pdgId()) == 13 and gen.status() == 1) and !((abs(gen.pdgId()) == 2000013 or abs(gen.pdgId()) == 1000013) and gen.status() == 62)) {continue;}
       float Lxy = sqrt(pow(gen.vx(),2) + pow(gen.vy(),2));
       if (printGen) {
-        std::cout << "*** GenParticle [pdgID:" << gen.pdgId() << "] (status=" << gen.status() << ")\n" 
-                  << "                (pt,eta,phi) = (" << gen.pt() << "," << gen.eta() << "," << gen.phi() << ")\n" 
-                  << "                (vx,vy,vz)   = (" << gen.vx() << "," << gen.vy() << "," << gen.vz() << ") Lxy = " << Lxy << std::endl;
+        std::cout << "*** GenParticle [pdgID:" << gen.pdgId() << "] (status=" << gen.status() << ")" 
+                  << ", (pt,eta,phi) = (" << gen.pt() << "," << gen.eta() << "," << gen.phi() << ")" 
+                  << ", (vx,vy,vz)   = (" << gen.vx() << "," << gen.vy() << "," << gen.vz() << ") Lxy = " << Lxy << std::endl;
       }
       // Loop over SimTracks to determine matches
       for (size_t j = 0; j < simTracks->size(); j++) {
         const SimTrack &simTrack = (*simTracks)[j];
-        if (abs(simTrack.type()) != 13) {continue;}
+        if (abs(simTrack.type()) != 13 and abs(gen.pdgId()) != 2000013 and abs(simTrack.type()) != 1000013) {continue;}
         if (deltaR(gen.eta(),gen.phi(),simTrack.momentum().eta(),simTrack.momentum().phi()) > dRGenSim) {continue;}
-        // Loop over tracker hits
         int nHits = 0;
         for (auto & trackerHits : trackerHitCollections) {
           for (size_t i = 0; i < trackerHits->size(); i++) {
             const PSimHit *hit = &(*trackerHits)[i];
-            if (abs(hit->particleType()) != 13) {continue;}
+            if (abs(hit->particleType()) != 13 and abs(gen.pdgId()) != 2000013 and abs(simTrack.type()) != 1000013) {continue;}
             if (simTrack.trackId() != hit->trackId()) {continue;}
             nHits++;
+          }
+        }
+        if (printSimTracks) {
+          std::cout << "    *** SimTrack [" << simTrack.trackId() << "] [pdgId of mother gen particle: " << simTrack.type() << "]" << ", (pt,eta,phi) = (" << simTrack.momentum().Pt() 
+                                                                        << "," << simTrack.momentum().eta() 
+                                                                        << "," << simTrack.momentum().phi() << ")"
+                                 << ", deltaR=" << deltaR(gen.eta(),gen.phi(),simTrack.momentum().eta(),simTrack.momentum().phi()) << ", simhits = " << nHits << std::endl; 
+        }
+        // Loop over tracker hits
+        for (auto & trackerHits : trackerHitCollections) {
+          for (size_t i = 0; i < trackerHits->size(); i++) {
+            const PSimHit *hit = &(*trackerHits)[i];
+            if (abs(hit->particleType()) != 13 and abs(gen.pdgId()) != 2000013 and abs(simTrack.type()) != 1000013) {continue;}
+            if (simTrack.trackId() != hit->trackId()) {continue;}
             if (printHits) { print_trackerHit(hit, simTrack, trackerGeom); }
             const DetId id(hit->detUnitId());
             const TrackerGeomDet* trkGeomDet = trackerGeom->idToDet(id);
@@ -457,11 +470,6 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             simHit_globalPosition_z.push_back(globalPos.z());
             simHit_genLxy.push_back(Lxy);
           }
-        }
-        if (printSimTracks) {
-          std::cout << "    *** SimTrack [pdgId of mother gen particle: " << simTrack.type() << "]" << ", (pt,eta,phi) = (" << simTrack.momentum().Pt() 
-                                                                        << "," << simTrack.momentum().eta() 
-                                                                        << "," << simTrack.momentum().phi() << "), n of simhits = " << nHits << std::endl; 
         }
       }
     }

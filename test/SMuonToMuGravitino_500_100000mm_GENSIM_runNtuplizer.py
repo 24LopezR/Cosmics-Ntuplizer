@@ -14,12 +14,12 @@ process.load("FWCore.MessageService.MessageLogger_cfi")
 from Configuration.AlCa.GlobalTag import GlobalTag
 
 # Select number of events to be processed
-nEvents = 20
+nEvents = 200
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(nEvents) )
 
 cwd = os.getcwd()
 # Read events
-listOfFiles = [f'file:{cwd}/../../../output.root']
+listOfFiles = [f'file:../../../output_GS_500mm_SlavaFix.root']
 process.source = cms.Source("PoolSource",
     fileNames = cms.untracked.vstring( listOfFiles ),
     secondaryFileNames = cms.untracked.vstring(),
@@ -38,5 +38,5 @@ process.printTree = cms.EDAnalyzer("ParticleListDrawer",
 ## Define the process to run 
 ## 
 process.load("Analysis.Muon-Ntuplizer.DisplacedSUSY_GENSIM_ntuples_cfi")
-process.ntuples.nameOfOutput = 'Ntuples_GENSIM_SMuonToMuGravitino_500_100000.root'
+process.ntuples.nameOfOutput = 'Ntuples_GENSIM_SMuonToMuGravitino_500_500mm_SlavaFix.root'
 process.p = cms.EndPath(process.printTree + process.ntuples)
