@@ -30,6 +30,11 @@
 #include "Geometry/TrackerGeometryBuilder/interface/TrackerGeometry.h"
 #include "Geometry/CommonTopologies/interface/TrackerGeomDet.h"
 
+#include "Geometry/Records/interface/MuonGeometryRecord.h"
+#include "Geometry/DTGeometry/interface/DTGeometry.h"
+#include "Geometry/CSCGeometry/interface/CSCGeometry.h"
+#include "Geometry/CommonTopologies/interface/MuonGeomDet.h"
+
 #include <string>
 #include <iostream>
 #include <vector>
@@ -129,6 +134,11 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
     
       const edm::ESGetToken<TrackerGeometry, TrackerDigiGeometryRecord> trackerGeomToken;
       const TrackerGeometry *trackerGeom;
+
+      const edm::ESGetToken<DTGeometry, MuonGeometryRecord> dtGeomToken;
+      const DTGeometry *dtGeom;
+      const edm::ESGetToken<CSCGeometry, MuonGeometryRecord> cscGeomToken;
+      const CSCGeometry *cscGeom;
       
       // GenParticles
       edm::EDGetTokenT<edm::View<reco::GenParticle> >  theGenParticleCollection;
@@ -164,6 +174,12 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
       edm::Handle<std::vector<PSimHit>>  trackerHitsTIDLowTof;
       edm::Handle<std::vector<PSimHit>>  trackerHitsTOBHighTof;
       edm::Handle<std::vector<PSimHit>>  trackerHitsTOBLowTof;
+
+      // Muon Hits
+      edm::EDGetTokenT<std::vector<PSimHit>> theMuonDTHitsCollection;
+      edm::Handle<std::vector<PSimHit>> muonDTHits;
+      edm::EDGetTokenT<std::vector<PSimHit>> theMuonCSCHitsCollection;
+      edm::Handle<std::vector<PSimHit>> muonCSCHits;
 
       //
       // --- Variables
@@ -221,7 +237,7 @@ class ntuplizer : public edm::one::EDAnalyzer<edm::one::SharedResources>  {
 };
 
 // Constructor
-ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) : trackerGeomToken(esConsumes<edm::Transition::Event>()) {
+ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) : trackerGeomToken(esConsumes<edm::Transition::Event>()), dtGeomToken(esConsumes<edm::Transition::Event>()), cscGeomToken(esConsumes<edm::Transition::Event>()) {
 
    usesResource("TFileService");
 
@@ -243,6 +259,9 @@ ntuplizer::ntuplizer(const edm::ParameterSet& iConfig) : trackerGeomToken(esCons
    theTrackerHitsTIDLowTofCollection         = consumes<std::vector<PSimHit>> (parameters.getParameter<edm::InputTag>("TrackerHitsTIDLowTofCollection")); 
    theTrackerHitsTOBHighTofCollection        = consumes<std::vector<PSimHit>> (parameters.getParameter<edm::InputTag>("TrackerHitsTOBHighTofCollection")); 
    theTrackerHitsTOBLowTofCollection         = consumes<std::vector<PSimHit>> (parameters.getParameter<edm::InputTag>("TrackerHitsTOBLowTofCollection")); 
+
+   theMuonDTHitsCollection = consumes<std::vector<PSimHit>> (parameters.getParameter<edm::InputTag>("MuonDTHitsCollection"));
+   theMuonCSCHitsCollection = consumes<std::vector<PSimHit>> (parameters.getParameter<edm::InputTag>("MuonCSCHitsCollection"));
 
    theGenParticleCollection = consumes<edm::View<reco::GenParticle> >  (parameters.getParameter<edm::InputTag>("genParticleCollection"));
 
@@ -346,6 +365,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 
    reset();
    trackerGeom = &iSetup.getData(trackerGeomToken);
+   dtGeom      = &iSetup.getData(dtGeomToken);
+   cscGeom     = &iSetup.getData(cscGeomToken);
 
    iEvent.getByToken(theTrackerHitsPixelBarrelHighTofCollection, trackerHitsPixelBarrelHighTof);
    iEvent.getByToken(theTrackerHitsPixelBarrelLowTofCollection, trackerHitsPixelBarrelLowTof);
@@ -359,6 +380,9 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
    iEvent.getByToken(theTrackerHitsTIDLowTofCollection, trackerHitsTIDLowTof);
    iEvent.getByToken(theTrackerHitsTOBHighTofCollection,trackerHitsTOBHighTof);
    iEvent.getByToken(theTrackerHitsTOBLowTofCollection, trackerHitsTOBLowTof);
+
+   iEvent.getByToken(theMuonDTHitsCollection, muonDTHits);
+   iEvent.getByToken(theMuonCSCHitsCollection, muonCSCHits);
 
    iEvent.getByToken(theGenParticleCollection, genParticles);
    iEvent.getByToken(theSimTrackCollection, simTracks);
@@ -416,10 +440,17 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
     trackerHitCollections.push_back( trackerHitsTIDLowTof);
     trackerHitCollections.push_back( trackerHitsTOBHighTof);
     trackerHitCollections.push_back( trackerHitsTOBLowTof);
+
+    std::vector<edm::Handle<std::vector<PSimHit>> > muonHitCollections;
+    muonHitCollections.push_back(muonDTHits);
+    muonHitCollections.push_back(muonCSCHits);
+
     // Loop over gen particles
     for (size_t k = 0; k < genParticles->size(); k++) {
       const reco::GenParticle &gen = (*genParticles)[k];
-      if (!(abs(gen.pdgId()) == 13 and gen.status() == 1) and !((abs(gen.pdgId()) == 2000013 or abs(gen.pdgId()) == 1000013) and gen.status() == 62)) {continue;}
+      if (!(abs(gen.pdgId()) == 13 and gen.status() == 1) and 
+          !((abs(gen.pdgId()) == 2000013 or abs(gen.pdgId()) == 1000013) and gen.status() == 62) and
+          !((abs(gen.pdgId()) == 2000006 or abs(gen.pdgId()) == 1000006) and gen.status() == 102)) {continue;}
       float Lxy = sqrt(pow(gen.vx(),2) + pow(gen.vy(),2));
       if (printGen) {
         std::cout << "*** GenParticle [pdgID:" << gen.pdgId() << "] (status=" << gen.status() << ")" 
@@ -432,6 +463,8 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
         if (abs(simTrack.type()) != 13 and abs(gen.pdgId()) != 2000013 and abs(simTrack.type()) != 1000013) {continue;}
         if (deltaR(gen.eta(),gen.phi(),simTrack.momentum().eta(),simTrack.momentum().phi()) > dRGenSim) {continue;}
         int nHits = 0;
+        int nDTHits = 0;
+        int nCSCHits = 0;
         for (auto & trackerHits : trackerHitCollections) {
           for (size_t i = 0; i < trackerHits->size(); i++) {
             const PSimHit *hit = &(*trackerHits)[i];
@@ -440,14 +473,49 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             nHits++;
           }
         }
+        for (auto & muonHits : muonHitCollections) {
+          for (size_t i = 0; i < muonHits->size(); i++) {
+            const PSimHit *hit = &(*muonHits)[i];
+            if (abs(hit->particleType()) != 13 && abs(hit->particleType()) != 1000013 && abs(hit->particleType()) != 2000013) continue;
+            if (simTrack.trackId() != hit->trackId()) continue;
+            const DetId id(hit->detUnitId());
+            if (id.det() != DetId::Muon) continue;
+            int muonSubdetId = id.subdetId();
+            if (muonSubdetId != MuonSubdetId::DT && muonSubdetId != MuonSubdetId::CSC) continue;
+            int station;
+            if (muonSubdetId == MuonSubdetId::DT) {
+              nDTHits++;
+              DTChamberId segId(id.rawId());
+              station = segId.station();
+              if (printHits) {
+                const auto& localPos = hit->localPosition();
+                const auto& globalPos = dtGeom->idToDet(id)->toGlobal(localPos);
+                std::cout << "        *** DTSimHit: station = " << station
+                          << " globalPos = " << globalPos << std::endl;
+              }
+            }
+            else if (muonSubdetId == MuonSubdetId::CSC) {
+              nCSCHits++;
+              CSCDetId segId(id.rawId());
+              station = segId.station();
+              if (printHits) {
+                const auto& localPos = hit->localPosition();
+                const auto& globalPos = cscGeom->idToDet(id)->toGlobal(localPos);
+                std::cout << "        *** CSCSimHit: station = " << station
+                          << " globalPos = " << globalPos << std::endl;
+              }
+            }
+          }
+        }
+
         if (printSimTracks) {
           std::cout << "    *** SimTrack [" << simTrack.trackId() << "] [pdgId of mother gen particle: " << simTrack.type() << "]" << ", (pt,eta,phi) = (" << simTrack.momentum().Pt() 
                                                                         << "," << simTrack.momentum().eta() 
                                                                         << "," << simTrack.momentum().phi() << ")"
-                                 << ", deltaR=" << deltaR(gen.eta(),gen.phi(),simTrack.momentum().eta(),simTrack.momentum().phi()) << ", simhits = " << nHits << std::endl; 
+                                 << ", deltaR=" << deltaR(gen.eta(),gen.phi(),simTrack.momentum().eta(),simTrack.momentum().phi()) << ", simhits(TK,DT,CSC) = (" << nHits << "," << nDTHits << "," << nCSCHits << ")" << std::endl; 
         }
         // Loop over tracker hits
-        for (auto & trackerHits : trackerHitCollections) {
+        /**for (auto & trackerHits : trackerHitCollections) {
           for (size_t i = 0; i < trackerHits->size(); i++) {
             const PSimHit *hit = &(*trackerHits)[i];
             if (abs(hit->particleType()) != 13 and abs(gen.pdgId()) != 2000013 and abs(simTrack.type()) != 1000013) {continue;}
@@ -470,7 +538,7 @@ void ntuplizer::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
             simHit_globalPosition_z.push_back(globalPos.z());
             simHit_genLxy.push_back(Lxy);
           }
-        }
+        }**/
       }
     }
 
